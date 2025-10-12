@@ -21,7 +21,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun WelcomeScreen() {
+fun WelcomeScreen(
+    onLoginClick: () -> Unit,
+    onRegisterClick: () -> Unit
+) {
     val darkBlue = Color(0xFF0A2463) // Azul oscuro del logo
     val lightGray = Color(0xFFB0B0B0)
 
@@ -62,7 +65,7 @@ fun WelcomeScreen() {
 
             // Botón Entrar
             Button(
-                onClick = { /* TODO: acción */ },
+                onClick = onLoginClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -81,7 +84,7 @@ fun WelcomeScreen() {
 
             // Botón Crear cuenta (blanco con borde azul)
             Button(
-                onClick = { /* TODO: acción */ },
+                onClick = onRegisterClick,
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -141,5 +144,8 @@ fun PlaceholderIcon(letter: String, bgColor: Color) {
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun PreviewWelcomeScreen() {
-    WelcomeScreen()
+    WelcomeScreen(
+        onLoginClick = TODO(),
+        onRegisterClick = TODO()
+    )
 }

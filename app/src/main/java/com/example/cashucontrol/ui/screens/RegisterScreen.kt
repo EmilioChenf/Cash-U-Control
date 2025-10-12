@@ -1,167 +1,177 @@
 package com.example.cashucontrol.ui.screens
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import com.google.firebase.database.FirebaseDatabase
+import com.example.cashucontrol.viewmodel.AuthViewModel
 
 @Composable
-fun RegisterScreen() {
-    val darkBlue = Color(0xFF0A2463)
+fun RegisterScreen(
+    onRegisterComplete: (String) -> Unit
+) {
+    val viewModel = remember { AuthViewModel() }
 
-    val name = remember { mutableStateOf("") }
-    val email = remember { mutableStateOf("") }
-    val password = remember { mutableStateOf("") }
+    var step by remember { mutableStateOf(1) } // Paso 1 o 2
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color.White
+    var name by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var selectedCurrency by remember { mutableStateOf("GTQ") }
+    var expanded by remember { mutableStateOf(false) }
+    val currencies = listOf("GTQ", "USD", "EUR", "MXN", "COP", "CRC")
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Encabezado azul
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(160.dp)
-                    .background(
-                        color = darkBlue,
-                        shape = RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp)
-                    ),
+
+        if (step == 1) {
+            // Paso 1: Datos del usuario
+            Text(
+                text = "Crear cuenta",
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nombre") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = email,
+                onValueChange = { email = it },
+                label = { Text("Email") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                label = { Text("Contraseña") },
+                visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Button(
+                onClick = {
+                    if (name.isNotBlank() && email.isNotBlank() && password.isNotBlank()) {
+                        step = 2
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Volver",
-                    tint = Color.White,
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .padding(16.dp)
+                Text("Siguiente")
+            }
+        }
+
+        if (step == 2) {
+            // Paso 2: Selección de moneda
+            Text(
+                text = "Bienvenido",
+                style = MaterialTheme.typography.headlineMedium
+            )
+            Text(
+                text = "Realice un seguimiento de sus gastos, establezca objetivos y reciba recordatorios.",
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(vertical = 8.dp),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("Moneda", style = MaterialTheme.typography.bodyMedium)
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Box {
+                OutlinedTextField(
+                    value = selectedCurrency,
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+                        IconButton(onClick = { expanded = !expanded }) {
+                            Icon(
+                                imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.ArrowDropDown,
+                                contentDescription = "Seleccionar moneda"
+                            )
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth()
                 )
 
-                Text(
-                    text = "Acceso",
-                    color = Color.White,
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Center)
-                )
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    currencies.forEach { currency ->
+                        DropdownMenuItem(
+                            text = { Text(currency) },
+                            onClick = {
+                                selectedCurrency = currency
+                                expanded = false
+                            }
+                        )
+                    }
+                }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Campo Nombre
-            CustomOutlinedTextField(
-                value = name.value,
-                onValueChange = { name.value = it },
-                label = "Nombre",
-                borderColor = darkBlue
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Campo Email
-            CustomOutlinedTextField(
-                value = email.value,
-                onValueChange = { email.value = it },
-                label = "Email",
-                borderColor = darkBlue
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Campo Contraseña
-            CustomOutlinedTextField(
-                value = password.value,
-                onValueChange = { password.value = it },
-                label = "Crea una contraseña",
-                borderColor = darkBlue,
-                isPassword = true
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            // Botón Siguiente
             Button(
-                onClick = { /* TODO: acción siguiente */ },
-                modifier = Modifier
-                    .width(200.dp)
-                    .height(50.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = darkBlue),
-                shape = RoundedCornerShape(10.dp)
+                onClick = {
+                    // Crear usuario en Firebase
+                    // En RegisterScreen.kt, dentro del onClick del botón "Iniciar"
+                    viewModel.registerUser(
+                        email = email,
+                        password = password,
+                        onSuccess = { userId -> // <- 'userId' es recibido aquí directamente
+                            // No necesitas llamar a getCurrentUserId()
+                            val db = FirebaseDatabase.getInstance().getReference("users")
+                            val userMap = mapOf(
+                                "name" to name,
+                                "email" to email,
+                                "currency" to selectedCurrency
+                            )
+                            db.child(userId).setValue(userMap) // <- Usas el userId directamente
+                            onRegisterComplete(name)
+                        },
+                        onError = { error ->
+                            println("Error al registrar usuario: $error")
+                        }
+                    )
+
+                },
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Text(
-                    text = "Siguiente",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Text("Iniciar")
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            TextButton(onClick = { step = 1 }) {
+                Text("Volver")
             }
         }
     }
-}
-
-@Composable
-fun CustomOutlinedTextField(
-    value: String,
-    onValueChange: (String) -> Unit,
-    label: String,
-    borderColor: Color,
-    isPassword: Boolean = false
-) {
-    Text(
-        text = label,
-        color = Color.Gray,
-        fontSize = 14.sp,
-        textAlign = TextAlign.Start,
-        modifier = Modifier
-            .fillMaxWidth(0.85f)
-            .padding(bottom = 4.dp)
-    )
-
-    TextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = Modifier
-            .fillMaxWidth(0.85f)
-            .height(56.dp)
-            .border(2.dp, borderColor, RoundedCornerShape(10.dp)),
-        shape = RoundedCornerShape(10.dp),
-        colors = TextFieldDefaults.colors(
-            unfocusedContainerColor = Color.White,
-            focusedContainerColor = Color.White,
-            focusedIndicatorColor = Color.Transparent,
-            unfocusedIndicatorColor = Color.Transparent
-        ),
-        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None
-    )
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-fun PreviewRegisterScreen() {
-    RegisterScreen()
 }

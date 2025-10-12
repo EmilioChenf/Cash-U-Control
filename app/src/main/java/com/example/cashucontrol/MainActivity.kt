@@ -4,20 +4,41 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
-import com.example.cashucontrol.ui.screens.WelcomeScreen
-import com.example.cashucontrol.ui.screens.RegisterScreen
+import com.example.cashucontrol.ui.screens.*
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            var showRegister by remember { mutableStateOf(false) }
+            var currentScreen by remember { mutableStateOf("welcome") }
+            var userName by remember { mutableStateOf("") }
 
-            if (showRegister) {
-                RegisterScreen()
-            } else {
-                WelcomeScreen()
+            when (currentScreen) {
+                "welcome" -> WelcomeScreen(
+                    onLoginClick = { currentScreen = "login" },
+                    onRegisterClick = { currentScreen = "register" }
+                )
+
+                "register" -> RegisterScreen(
+                    onRegisterComplete = { name ->
+                        userName = name
+                        currentScreen = "home"
+                    }
+                )
+
+                "login" -> LoginScreen(
+                    onLoginSuccess = { name ->
+                        userName = name
+                        currentScreen = "home"
+                    }
+                )
+
+                "home" -> HomeScreen(
+                    name = userName,
+                    onLogout = { currentScreen = "welcome" }
+                )
             }
         }
     }
 }
+
