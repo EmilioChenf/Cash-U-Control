@@ -33,7 +33,7 @@ fun AppNavigation(navController: NavHostController) {
         navController = navController,
         startDestination = "welcome"
     ) {
-        // 🔹 Pantalla de bienvenida
+        // 🏁 Pantalla de bienvenida
         composable("welcome") {
             WelcomeScreen(
                 onLoginClick = { navController.navigate("login") },
@@ -41,10 +41,10 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // 🔹 Registro
+        // 📝 Registro
         composable("register") {
             RegisterScreen(
-                onRegisterComplete = { _ ->
+                onRegisterComplete = {
                     navController.navigate("dashboard") {
                         popUpTo("welcome") { inclusive = true }
                     }
@@ -52,10 +52,10 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // 🔹 Login
+        // 🔑 Login
         composable("login") {
             LoginScreen(
-                onLoginSuccess = { _ ->
+                onLoginSuccess = {
                     navController.navigate("dashboard") {
                         popUpTo("welcome") { inclusive = true }
                     }
@@ -67,11 +67,12 @@ fun AppNavigation(navController: NavHostController) {
         composable("dashboard") {
             DashboardScreen(
                 onOpenIngresos = { navController.navigate("ingresos") },
-                onOpenGastos = { navController.navigate("gastos") }
+                onOpenGastos = { navController.navigate("gastos") },
+                onOpenAhorro = { navController.navigate("ahorro") }
             )
         }
 
-        // 💰 Pantalla de Ingresos
+        // 💵 Ingresos
         composable("ingresos") {
             IngresosScreen(
                 onBackClick = { navController.popBackStack() },
@@ -79,7 +80,7 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // ❤️ Pantalla de Gastos
+        // ❤️ Gastos
         composable("gastos") {
             GastosScreen(
                 onBackClick = { navController.popBackStack() },
@@ -87,16 +88,31 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // ➕ Formulario de nuevo ingreso
+        // 🧾 Nuevo ingreso
         composable("nuevoIngreso") {
-            NuevoIngresoFormScreen(
-                onBackClick = { navController.popBackStack() }
+            NuevoIngresoFormScreen(onBackClick = { navController.popBackStack() })
+        }
+
+        // 🧾 Nuevo gasto
+        composable("nuevoGasto") {
+            NuevoGastoFormScreen(onBackClick = { navController.popBackStack() })
+        }
+
+        // 💛 Ahorro
+        composable("ahorro") {
+            AhorroScreen(
+                onBackClick = { navController.popBackStack() },
+                onAddObjetivoClick = { plazoSeleccionado ->
+                    navController.navigate("nuevoObjetivo/$plazoSeleccionado")
+                }
             )
         }
 
-        // 🧾 Formulario de nuevo gasto
-        composable("nuevoGasto") {
-            NuevoGastoFormScreen(
+        // 🌟 Nuevo objetivo de ahorro
+        composable("nuevoObjetivo/{plazoSeleccionado}") { backStackEntry ->
+            val plazoSeleccionado = backStackEntry.arguments?.getString("plazoSeleccionado") ?: "Mediano plazo"
+            NuevoObjetivoScreen(
+                selectedPlazo = plazoSeleccionado,
                 onBackClick = { navController.popBackStack() }
             )
         }

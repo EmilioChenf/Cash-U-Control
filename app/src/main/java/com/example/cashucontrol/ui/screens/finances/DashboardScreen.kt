@@ -25,7 +25,8 @@ import com.example.cashucontrol.ui.theme.CashUControlTheme
 @Composable
 fun DashboardScreen(
     onOpenIngresos: () -> Unit = {},
-    onOpenGastos: () -> Unit = {}
+    onOpenGastos: () -> Unit = {},
+    onOpenAhorro: () -> Unit = {} // ✅ nuevo parámetro para abrir pantalla de Ahorro
 ) {
     var selectedTab by remember { mutableStateOf("Ingresos") }
     var showContent by remember { mutableStateOf(false) }
@@ -47,7 +48,8 @@ fun DashboardScreen(
         ) {
             TopCardsSection(
                 onIngresosClick = onOpenIngresos,
-                onGastosClick = onOpenGastos
+                onGastosClick = onOpenGastos,
+                onAhorroClick = onOpenAhorro // ✅ conectado correctamente
             )
         }
 
@@ -80,23 +82,26 @@ fun DashboardScreen(
             AnimatedContent(
                 targetState = selectedTab,
                 transitionSpec = {
-                    slideInHorizontally(initialOffsetX = { fullWidth -> if (targetState == "Gastos") fullWidth else -fullWidth }) +
-                            fadeIn(animationSpec = tween(500)) togetherWith
-                            slideOutHorizontally(targetOffsetX = { fullWidth -> if (targetState == "Gastos") -fullWidth else fullWidth }) +
-                            fadeOut(animationSpec = tween(500))
-                }, label = ""
+                    slideInHorizontally(initialOffsetX = { fullWidth ->
+                        if (targetState == "Gastos") fullWidth else -fullWidth
+                    }) + fadeIn(animationSpec = tween(500)) togetherWith
+                            slideOutHorizontally(targetOffsetX = { fullWidth ->
+                                if (targetState == "Gastos") -fullWidth else fullWidth
+                            }) + fadeOut(animationSpec = tween(500))
+                },
+                label = ""
             ) { tab ->
                 when (tab) {
                     "Ingresos" -> IngresosContent()
                     "Gastos" -> GastosContent()
-                    "Ahorro" -> AhorroContent()
+                    "Ahorro" -> AhorroPreviewContent() // 🔸 mantiene una vista previa del ahorro dentro del dashboard
                 }
             }
         }
     }
 }
 
-// -------------------- SECCIONES --------------------
+// -------------------- ENCABEZADO --------------------
 
 @Composable
 fun HeaderSection() {
@@ -138,8 +143,14 @@ fun HeaderSection() {
     }
 }
 
+// -------------------- TARJETAS SUPERIORES --------------------
+
 @Composable
-fun TopCardsSection(onIngresosClick: () -> Unit = {}, onGastosClick: () -> Unit = {}) {
+fun TopCardsSection(
+    onIngresosClick: () -> Unit = {},
+    onGastosClick: () -> Unit = {},
+    onAhorroClick: () -> Unit = {} // ✅ añadido
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -155,11 +166,14 @@ fun TopCardsSection(onIngresosClick: () -> Unit = {}, onGastosClick: () -> Unit 
         }
 
         Spacer(modifier = Modifier.height(12.dp))
+
+        // 🟡 Tarjeta de ahorro clickeable
         Box(
             modifier = Modifier
                 .width(160.dp)
                 .clip(RoundedCornerShape(15.dp))
-                .background(Color(0xFFF0F0F0))
+                .background(Color(0xFFFFF59D))
+                .clickable { onAhorroClick() } // ✅ ahora abre la pantalla de ahorro
                 .padding(vertical = 14.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -183,7 +197,7 @@ fun IngresosContent() {
 
         Spacer(modifier = Modifier.height(20.dp))
         Text("Llevas 17 días registrando", color = Color.Gray, fontSize = 13.sp)
-        Text("Meta mensual 2,500.00", fontWeight = FontWeight.Bold, color = Color.Black)
+        Text("Meta mensual Q.2,500.00", fontWeight = FontWeight.Bold, color = Color.Black)
         Spacer(modifier = Modifier.height(8.dp))
         ProgressCard("Alcanzado un 90%", "¡Vas muy bien, sigue así!", 0.9f, Color(0xFF00C853))
         Spacer(modifier = Modifier.height(20.dp))
@@ -204,6 +218,19 @@ fun GastosContent() {
         Text("Presupuesto mensual", fontWeight = FontWeight.Bold, color = Color.Black)
         Spacer(modifier = Modifier.height(8.dp))
         ProgressCard("Usado 85%", "¡Ya casi llegas al límite!", 0.85f, Color(0xFFFF5252))
+        Spacer(modifier = Modifier.height(20.dp))
+        MovimientosSection()
+    }
+}
+
+@Composable
+fun AhorroPreviewContent() {
+    Column {
+        Text("Metas activas", fontWeight = FontWeight.Bold, color = Color(0xFF1A237E))
+        Spacer(modifier = Modifier.height(10.dp))
+        MetaCard("Teléfono nuevo → Q.800", 0.37f, "Q300.00 / 800.00", "37%")
+        Spacer(modifier = Modifier.height(20.dp))
+        ProgressCard("Ahorrado un 37%", "¡Sigue con tu meta!", 0.37f, Color(0xFF00C853))
         Spacer(modifier = Modifier.height(20.dp))
         MovimientosSection()
     }
