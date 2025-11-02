@@ -69,7 +69,15 @@ fun AppNavigation(navController: NavHostController) {
                 onOpenIngresos = { navController.navigate("ingresos") },
                 onOpenGastos = { navController.navigate("gastos") },
                 onOpenAhorro = { navController.navigate("ahorro") },
-                onOpenNotificaciones = { navController.navigate("notificaciones") } // ✅ Nueva pantalla 🔔
+                onOpenNotificaciones = { navController.navigate("notificaciones") },
+                onEditProfile = { navController.navigate("editarPerfil") },
+                onViewInsignias = { navController.navigate("insignias") },
+                onHelpCenter = { navController.navigate("ayuda") },
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo("dashboard") { inclusive = true }
+                    }
+                }
             )
         }
 
@@ -118,11 +126,24 @@ fun AppNavigation(navController: NavHostController) {
             )
         }
 
-        // 🔔 Bandeja de entrada (Notificaciones)
+        // 🔔 Notificaciones
         composable("notificaciones") {
-            NotificacionesScreen(
-                onBackClick = { navController.popBackStack() }
-            )
+            NotificacionesScreen(onBackClick = { navController.popBackStack() })
+        }
+
+        // 👤 Editar perfil
+        composable("editarPerfil") {
+            EditarPerfilScreen(onBackClick = { navController.popBackStack() })
+        }
+
+        // 🏅 Ver insignias
+        composable("insignias") {
+            InsigniasScreen(onBackClick = { navController.popBackStack() })
+        }
+
+        // 💬 Centro de ayuda
+        composable("ayuda") {
+            CentroAyudaScreen(onBackClick = { navController.popBackStack() })
         }
     }
 }

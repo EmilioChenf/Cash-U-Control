@@ -19,85 +19,120 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import com.example.cashucontrol.ui.theme.CashUControlTheme
-
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun DashboardScreen(
     onOpenIngresos: () -> Unit = {},
     onOpenGastos: () -> Unit = {},
     onOpenAhorro: () -> Unit = {},
-    onOpenNotificaciones: () -> Unit = {} // ✅ nuevo parámetro
+    onOpenNotificaciones: () -> Unit = {},
+    onEditProfile: () -> Unit = {},
+    onViewInsignias: () -> Unit = {},
+    onHelpCenter: () -> Unit = {},
+    onLogout: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf("Ingresos") }
     var showContent by remember { mutableStateOf(false) }
+    var showProfileMenu by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) { showContent = true }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF5F5F5))
-            .verticalScroll(rememberScrollState())
     ) {
-        HeaderSection(onOpenNotificaciones = onOpenNotificaciones) // ✅ pasa el callback
-        Spacer(modifier = Modifier.height(20.dp))
-
-        AnimatedVisibility(
-            visible = showContent,
-            enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(animationSpec = tween(700))
-        ) {
-            TopCardsSection(
-                onIngresosClick = onOpenIngresos,
-                onGastosClick = onOpenGastos,
-                onAhorroClick = onOpenAhorro
-            )
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        // 🔽 Tabs inferiores
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .clip(RoundedCornerShape(15.dp))
-                .background(Color.White)
-                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(Color(0xFFE0E0E0))
-                    .padding(4.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly
+            HeaderSection(
+                onOpenNotificaciones = onOpenNotificaciones,
+                onProfileClick = { showProfileMenu = !showProfileMenu }
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            AnimatedVisibility(
+                visible = showContent,
+                enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(animationSpec = tween(700))
             ) {
-                TabButton("Ingresos", selectedTab == "Ingresos", Color(0xFF00C853)) { selectedTab = "Ingresos" }
-                TabButton("Gastos", selectedTab == "Gastos", Color(0xFFFF5252)) { selectedTab = "Gastos" }
-                TabButton("Ahorro", selectedTab == "Ahorro", Color(0xFFFFEB3B)) { selectedTab = "Ahorro" }
+                TopCardsSection(
+                    onIngresosClick = onOpenIngresos,
+                    onGastosClick = onOpenGastos,
+                    onAhorroClick = onOpenAhorro
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            AnimatedContent(
-                targetState = selectedTab,
-                transitionSpec = {
-                    slideInHorizontally(initialOffsetX = { fullWidth ->
-                        if (targetState == "Gastos") fullWidth else -fullWidth
-                    }) + fadeIn(animationSpec = tween(500)) togetherWith
-                            slideOutHorizontally(targetOffsetX = { fullWidth ->
-                                if (targetState == "Gastos") -fullWidth else fullWidth
-                            }) + fadeOut(animationSpec = tween(500))
-                },
-                label = ""
-            ) { tab ->
-                when (tab) {
-                    "Ingresos" -> IngresosContent()
-                    "Gastos" -> GastosContent()
-                    "Ahorro" -> AhorroPreviewContent()
+            // 🔽 Tabs inferiores
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(Color.White)
+                    .padding(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(15.dp))
+                        .background(Color(0xFFE0E0E0))
+                        .padding(4.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    TabButton("Ingresos", selectedTab == "Ingresos", Color(0xFF00C853)) { selectedTab = "Ingresos" }
+                    TabButton("Gastos", selectedTab == "Gastos", Color(0xFFFF5252)) { selectedTab = "Gastos" }
+                    TabButton("Ahorro", selectedTab == "Ahorro", Color(0xFFFFEB3B)) { selectedTab = "Ahorro" }
+                }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                AnimatedContent(
+                    targetState = selectedTab,
+                    transitionSpec = {
+                        slideInHorizontally(initialOffsetX = { if (targetState == "Gastos") it else -it }) +
+                                fadeIn(animationSpec = tween(500)) togetherWith
+                                slideOutHorizontally(targetOffsetX = { if (targetState == "Gastos") -it else it }) +
+                                fadeOut(animationSpec = tween(500))
+                    },
+                    label = ""
+                ) { tab ->
+                    when (tab) {
+                        "Ingresos" -> IngresosContent()
+                        "Gastos" -> GastosContent()
+                        "Ahorro" -> AhorroPreviewContent()
+                    }
                 }
             }
+        }
+
+        // 🧩 Popup flotante del perfil
+        if (showProfileMenu) {
+            ProfilePopup(
+                onDismiss = { showProfileMenu = false },
+                onEditProfile = {
+                    showProfileMenu = false
+                    onEditProfile()
+                },
+                onViewInsignias = {
+                    showProfileMenu = false
+                    onViewInsignias()
+                },
+                onHelpCenter = {
+                    showProfileMenu = false
+                    onHelpCenter()
+                },
+                onLogout = {
+                    showProfileMenu = false
+                    onLogout()
+                }
+            )
         }
     }
 }
@@ -105,7 +140,10 @@ fun DashboardScreen(
 // -------------------- ENCABEZADO --------------------
 
 @Composable
-fun HeaderSection(onOpenNotificaciones: () -> Unit = {}) {
+fun HeaderSection(
+    onOpenNotificaciones: () -> Unit = {},
+    onProfileClick: () -> Unit = {}
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -122,14 +160,20 @@ fun HeaderSection(onOpenNotificaciones: () -> Unit = {}) {
                     Icons.Default.Notifications,
                     contentDescription = "Notificaciones",
                     tint = Color.White,
-                    modifier = Modifier
-                        .clickable { onOpenNotificaciones() } // ✅ al presionar, abre Bandeja de entrada
+                    modifier = Modifier.clickable { onOpenNotificaciones() }
                 )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Hola ", color = Color.White, fontSize = 20.sp)
                     Text("Ana Sofía!", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
                 }
-                Icon(Icons.Default.AccountCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(28.dp))
+                Icon(
+                    Icons.Default.AccountCircle,
+                    contentDescription = "Perfil",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable { onProfileClick() } // ✅ abre menú flotante
+                )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -149,6 +193,50 @@ fun HeaderSection(onOpenNotificaciones: () -> Unit = {}) {
         }
     }
 }
+@Composable
+fun ProfilePopup(
+    onDismiss: () -> Unit,
+    onEditProfile: () -> Unit,
+    onViewInsignias: () -> Unit,
+    onHelpCenter: () -> Unit,
+    onLogout: () -> Unit
+) {
+    Popup(
+        alignment = Alignment.TopEnd,
+        onDismissRequest = onDismiss,
+        properties = PopupProperties(focusable = true)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(top = 90.dp, end = 20.dp)
+                .clip(RoundedCornerShape(15.dp))
+                .background(Color.White)
+                .border(1.dp, Color.LightGray, RoundedCornerShape(15.dp))
+        ) {
+            ProfileMenuItem(Icons.Default.Person, "Editar perfil", onEditProfile)
+            ProfileMenuItem(Icons.Default.EmojiEvents, "Ver insignias", onViewInsignias)
+            ProfileMenuItem(Icons.Default.HeadsetMic, "Centro de ayuda", onHelpCenter)
+            Divider(color = Color.LightGray, thickness = 1.dp)
+            ProfileMenuItem(Icons.Default.ExitToApp, "Cerrar sesión", onLogout)
+        }
+    }
+}
+
+@Composable
+fun ProfileMenuItem(icon: androidx.compose.ui.graphics.vector.ImageVector, text: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+            .padding(horizontal = 15.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(icon, contentDescription = null, tint = Color.Gray)
+        Spacer(modifier = Modifier.width(10.dp))
+        Text(text, color = Color.Gray, fontWeight = FontWeight.Medium)
+    }
+}
+
 // -------------------- TARJETAS SUPERIORES --------------------
 
 @Composable
