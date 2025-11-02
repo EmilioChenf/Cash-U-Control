@@ -25,7 +25,7 @@ La aplicación utiliza **Firebase Authentication** y **Firestore** para la gesti
 
 ---
 
-## 🧭 Estructura de Navegación
+### 🧭 Estructura de Navegación
 
 > Implementada con **Navigation Compose (2.8.3)** usando `NavHost` y `NavController`.
 
@@ -50,7 +50,7 @@ NavHost(
 }
 ```
 
-📱 Flujo principal:
+### 📱 Flujo principal:
 
 css
 Copiar código
@@ -67,7 +67,7 @@ Firebase Realtime Database	Fuente de datos fake.	Simulación de información y p
 
 ✅ Nota: En caso de no contar con internet, la app usa datos locales simulados para mantener la funcionalidad completa.
 
-📚 Librerías Utilizadas
+### 📚 Librerías Utilizadas
 ```bash
 Copiar código
 // --- Jetpack Compose ---
@@ -94,7 +94,7 @@ Firebase BoM	Control de dependencias Firebase.	33.1.2
 Lifecycle Runtime	Manejo del ciclo de vida en Compose.	2.7.0
 ```
 
-🧩 Estructura del Proyecto
+### 🧩 Estructura del Proyecto
 ```bash
 com.example.cashucontrol
 │
@@ -117,7 +117,7 @@ com.example.cashucontrol
 ```
 
 
-⚙️ Requisitos Técnicos
+### ⚙️ Requisitos Técnicos
 Requisito	Versión mínima
 Android Studio	Koala o superior
 Kotlin	1.9+
@@ -126,14 +126,14 @@ targetSdk	36
 JVM Target	11
 Firebase BoM	33.1.2
 
-📂 Se requiere agregar el archivo:
+### 📂 Se requiere agregar el archivo:
 
 ```bash
 app/google-services.json
 ```
 
 
-🧾 Datos de Prueba
+### 🧾 Datos de Prueba
 Para esta entrega, la app contiene datos falsos que permiten probar todas las funcionalidades sin conexión ni autenticación real.
 
 Ejemplo de registros locales:
@@ -156,36 +156,36 @@ Ejemplo de registros locales:
 }
 ```
 
-🧪 Compilación y Ejecución
-🔧 Clonar el repositorio
+### 🧪 Compilación y Ejecución
+### 🔧 Clonar el repositorio
 ```bash
 git clone https://github.com/<usuario>/CashUControl.git
 ```
 
-🧩 Compilar la app
+### 🧩 Compilar la app
 ```bash
 ./gradlew assembleDebug
 ```
 
-📱 Instalar APK
+### 📱 Instalar APK
 El archivo generado estará disponible en:
 
 bash
 Copiar código
 CashUControl/app/APK/
-📘 Rúbrica de Evaluación
+### 📘 Rúbrica de Evaluación
 Criterio	Descripción	Ponderación
 ✅ Navegación funcional	Todas las pantallas conectadas y navegables.	80%
 🧩 README documentado	Incluye servicios y librerías correctamente explicados.	20%
 
 
-🏁 Conclusión
+### 🏁 Conclusión
 CashU Control promueve la educación financiera mediante una experiencia digital atractiva e interactiva.
 Su diseño minimalista, acompañado de un sistema de logros e indicadores visuales, motiva la constancia en los hábitos de ahorro.
 
 💬 “Pequeños pasos crean grandes logros.”
 
-🛠️ Hecho con
+### 🛠️ Hecho con
 ❤️ Kotlin · 🧱 Jetpack Compose · ☁️ Firebase · 🧭 Navigation Compose
 
 
