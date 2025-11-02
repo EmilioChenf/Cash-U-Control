@@ -3,15 +3,13 @@ package com.example.cashucontrol
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cashucontrol.ui.screens.*
-import com.example.cashucontrol.ui.screens.finances.DashboardScreen
-import com.example.cashucontrol.ui.screens.finances.IngresosScreen
-import com.example.cashucontrol.ui.screens.finances.NuevoIngresoFormScreen
+import com.example.cashucontrol.ui.screens.finances.*
 import com.example.cashucontrol.ui.theme.CashUControlTheme
 import com.google.firebase.FirebaseApp
 
@@ -68,22 +66,38 @@ fun AppNavigation(navController: NavHostController) {
         // 🏠 Dashboard principal
         composable("dashboard") {
             DashboardScreen(
-                onOpenIngresos = { navController.navigate("ingresos") } // ✅ Conecta con Ingresos
+                onOpenIngresos = { navController.navigate("ingresos") },
+                onOpenGastos = { navController.navigate("gastos") }
             )
         }
 
         // 💰 Pantalla de Ingresos
         composable("ingresos") {
             IngresosScreen(
-                onBackClick = { navController.popBackStack() }, // ← vuelve al Dashboard
-                onAddIngresoClick = { navController.navigate("nuevoIngreso") } // ✅ Conecta con formulario
+                onBackClick = { navController.popBackStack() },
+                onAddIngresoClick = { navController.navigate("nuevoIngreso") }
+            )
+        }
+
+        // ❤️ Pantalla de Gastos
+        composable("gastos") {
+            GastosScreen(
+                onBackClick = { navController.popBackStack() },
+                onAddGastoClick = { navController.navigate("nuevoGasto") }
             )
         }
 
         // ➕ Formulario de nuevo ingreso
         composable("nuevoIngreso") {
             NuevoIngresoFormScreen(
-                onBackClick = { navController.popBackStack() } // ← vuelve a Ingresos
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // 🧾 Formulario de nuevo gasto
+        composable("nuevoGasto") {
+            NuevoGastoFormScreen(
+                onBackClick = { navController.popBackStack() }
             )
         }
     }

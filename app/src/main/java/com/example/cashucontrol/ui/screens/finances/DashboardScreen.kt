@@ -24,7 +24,8 @@ import com.example.cashucontrol.ui.theme.CashUControlTheme
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun DashboardScreen(
-    onOpenIngresos: () -> Unit = {}, // 👈 NUEVO parámetro para navegar
+    onOpenIngresos: () -> Unit = {},
+    onOpenGastos: () -> Unit = {}
 ) {
     var selectedTab by remember { mutableStateOf("Ingresos") }
     var showContent by remember { mutableStateOf(false) }
@@ -44,12 +45,15 @@ fun DashboardScreen(
             visible = showContent,
             enter = slideInVertically(initialOffsetY = { it / 2 }) + fadeIn(animationSpec = tween(700))
         ) {
-            TopCardsSection(onIngresosClick = onOpenIngresos) // 👈 Se pasa la acción
+            TopCardsSection(
+                onIngresosClick = onOpenIngresos,
+                onGastosClick = onOpenGastos
+            )
         }
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        // El resto queda igual...
+        // 🔽 Tabs inferiores
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -135,7 +139,7 @@ fun HeaderSection() {
 }
 
 @Composable
-fun TopCardsSection(onIngresosClick: () -> Unit = {}) {
+fun TopCardsSection(onIngresosClick: () -> Unit = {}, onGastosClick: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -146,10 +150,10 @@ fun TopCardsSection(onIngresosClick: () -> Unit = {}) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            FinanceCard("Ingresos", Icons.Default.AttachMoney, Color(0xFF00C853), "Q. 2,500.00",
-                onClick = onIngresosClick) // 👈 Click que lleva a la pantalla
-            FinanceCard("Gastos", Icons.Default.MoneyOff, Color(0xFFFF5252), "Q. 1,250.00")
+            FinanceCard("Ingresos", Icons.Default.AttachMoney, Color(0xFF00C853), "Q. 2,500.00", onClick = onIngresosClick)
+            FinanceCard("Gastos", Icons.Default.MoneyOff, Color(0xFFFF5252), "Q. 1,250.00", onClick = onGastosClick)
         }
+
         Spacer(modifier = Modifier.height(12.dp))
         Box(
             modifier = Modifier
@@ -167,7 +171,6 @@ fun TopCardsSection(onIngresosClick: () -> Unit = {}) {
         }
     }
 }
-
 
 // -------------------- CONTENIDOS --------------------
 
