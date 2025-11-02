@@ -159,7 +159,7 @@ Ejemplo de registros locales:
 ### 🧪 Compilación y Ejecución
 ### 🔧 Clonar el repositorio
 ```bash
-git clone https://github.com/<usuario>/CashUControl.git
+https://github.com/EmilioChenf/Cash-U-Control.git
 ```
 
 ### 🧩 Compilar la app
