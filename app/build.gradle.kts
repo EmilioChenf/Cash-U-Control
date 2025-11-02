@@ -61,7 +61,7 @@ dependencies {
     implementation("androidx.compose.foundation:foundation:1.7.0")
     implementation("androidx.compose.material3:material3:1.3.0")
     implementation("androidx.compose.material:material:1.7.0")
-
+    implementation("androidx.compose.material:material-icons-extended")
     // --- Firebase ---
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-auth-ktx")
@@ -78,4 +78,8 @@ dependencies {
     // --- Debug Tools ---
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+
+    // Navegación en Jetpack Compose
+    implementation("androidx.navigation:navigation-compose:2.8.3")
+
 }

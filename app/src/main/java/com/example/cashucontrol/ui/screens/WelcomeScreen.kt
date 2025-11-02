@@ -5,11 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,35 +21,31 @@ fun WelcomeScreen(
     onLoginClick: () -> Unit,
     onRegisterClick: () -> Unit
 ) {
-    val darkBlue = Color(0xFF0A2463) // Azul oscuro del logo
+    val darkBlue = Color(0xFF0A2463)
     val lightGray = Color(0xFFB0B0B0)
 
-    Surface(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(Color.White) // 👈 fondo visible asegurado
             .padding(horizontal = 32.dp),
-        color = Color.White
+        contentAlignment = Alignment.Center
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
+            modifier = Modifier.fillMaxWidth()
         ) {
-            // Título principal
             Text(
                 text = "¡Hola!",
-                style = MaterialTheme.typography.headlineLarge.copy(
-                    color = darkBlue,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 36.sp
-                ),
+                color = darkBlue,
+                fontWeight = FontWeight.Bold,
+                fontSize = 36.sp,
                 textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Subtítulo
             Text(
                 text = "Empieza a tomar el control de tu dinero hoy.",
                 color = Color.Gray,
@@ -63,7 +55,6 @@ fun WelcomeScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // Botón Entrar
             Button(
                 onClick = onLoginClick,
                 modifier = Modifier
@@ -72,17 +63,11 @@ fun WelcomeScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = darkBlue),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text(
-                    text = "Entrar",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Text("Entrar", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Botón Crear cuenta (blanco con borde azul)
             Button(
                 onClick = onRegisterClick,
                 modifier = Modifier
@@ -92,34 +77,19 @@ fun WelcomeScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = Color.White),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text(
-                    text = "Crear cuenta",
-                    color = darkBlue,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold
-                )
+                Text("Crear cuenta", color = darkBlue, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
             }
 
             Spacer(modifier = Modifier.height(40.dp))
 
-            // Texto inferior
-            Text(
-                text = "Inicia sesión con",
-                color = lightGray,
-                fontSize = 14.sp,
-                textAlign = TextAlign.Center
-            )
+            Text("Inicia sesión con", color = lightGray, fontSize = 14.sp)
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Íconos de redes (placeholders)
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                PlaceholderIcon("F", Color(0xFF1877F2)) // Facebook
-                PlaceholderIcon("G", Color(0xFFDB4437)) // Google
-                PlaceholderIcon("in", Color(0xFF0077B5)) // LinkedIn
+            Row(horizontalArrangement = Arrangement.spacedBy(20.dp)) {
+                PlaceholderIcon("F", Color(0xFF1877F2))
+                PlaceholderIcon("G", Color(0xFFDB4437))
+                PlaceholderIcon("in", Color(0xFF0077B5))
             }
         }
     }
@@ -133,19 +103,12 @@ fun PlaceholderIcon(letter: String, bgColor: Color) {
             .background(bgColor, CircleShape),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = letter,
-            color = Color.White,
-            fontWeight = FontWeight.Bold
-        )
+        Text(text = letter, color = Color.White, fontWeight = FontWeight.Bold)
     }
 }
 
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun PreviewWelcomeScreen() {
-    WelcomeScreen(
-        onLoginClick = TODO(),
-        onRegisterClick = TODO()
-    )
+    WelcomeScreen(onLoginClick = {}, onRegisterClick = {})
 }
