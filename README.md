@@ -29,7 +29,7 @@ La aplicación utiliza **Firebase Authentication** y **Firestore** para la gesti
 
 > Implementada con **Navigation Compose (2.8.3)** usando `NavHost` y `NavController`.
 
-```kotlin
+```bash
 NavHost(
     navController = navController,
     startDestination = "welcome"
@@ -48,6 +48,8 @@ NavHost(
     composable("insignias") { InsigniasScreen() }
     composable("centroAyuda") { CentroAyudaScreen() }
 }
+```
+
 📱 Flujo principal:
 
 css
@@ -66,7 +68,7 @@ Firebase Realtime Database	Fuente de datos fake.	Simulación de información y p
 ✅ Nota: En caso de no contar con internet, la app usa datos locales simulados para mantener la funcionalidad completa.
 
 📚 Librerías Utilizadas
-kotlin
+```bash
 Copiar código
 // --- Jetpack Compose ---
 implementation(platform(libs.androidx.compose.bom))
@@ -90,10 +92,10 @@ Material 3	Componentes visuales adaptativos.	1.3.0
 Navigation Compose	Sistema de rutas entre pantallas.	2.8.3
 Firebase BoM	Control de dependencias Firebase.	33.1.2
 Lifecycle Runtime	Manejo del ciclo de vida en Compose.	2.7.0
+```
 
 🧩 Estructura del Proyecto
-bash
-Copiar código
+```bash
 com.example.cashucontrol
 │
 ├── ui/
@@ -112,6 +114,9 @@ com.example.cashucontrol
 │
 ├── MainActivity.kt
 └── build.gradle.kts
+```
+
+
 ⚙️ Requisitos Técnicos
 Requisito	Versión mínima
 Android Studio	Koala o superior
@@ -123,16 +128,17 @@ Firebase BoM	33.1.2
 
 📂 Se requiere agregar el archivo:
 
-bash
-Copiar código
+```bash
 app/google-services.json
+```
+
+
 🧾 Datos de Prueba
 Para esta entrega, la app contiene datos falsos que permiten probar todas las funcionalidades sin conexión ni autenticación real.
 
 Ejemplo de registros locales:
 
-json
-Copiar código
+```bash
 {
   "ingresos": [
     { "nombre": "Trabajo medio tiempo", "monto": 1000 },
@@ -148,15 +154,19 @@ Copiar código
     "actual": 300
   }
 }
+```
+
 🧪 Compilación y Ejecución
 🔧 Clonar el repositorio
-bash
-Copiar código
+```bash
 git clone https://github.com/<usuario>/CashUControl.git
+```
+
 🧩 Compilar la app
-bash
-Copiar código
+```bash
 ./gradlew assembleDebug
+```
+
 📱 Instalar APK
 El archivo generado estará disponible en:
 
@@ -168,12 +178,6 @@ Criterio	Descripción	Ponderación
 ✅ Navegación funcional	Todas las pantallas conectadas y navegables.	80%
 🧩 README documentado	Incluye servicios y librerías correctamente explicados.	20%
 
-👩‍💻 Equipo de Desarrollo
-Nombre	Rol	Código
-Harry Daniel Méndez Mendoza	Desarrollador principal	—
-José Manuel Sánchez Hernández	UI / Firebase	24092
-Juan Gabriel Gualim Molina	Lógica de datos	24852
-Emilio Josué Chen Borrayo	Integración y navegación	—
 
 🏁 Conclusión
 CashU Control promueve la educación financiera mediante una experiencia digital atractiva e interactiva.
@@ -183,17 +187,6 @@ Su diseño minimalista, acompañado de un sistema de logros e indicadores visual
 
 🛠️ Hecho con
 ❤️ Kotlin · 🧱 Jetpack Compose · ☁️ Firebase · 🧭 Navigation Compose
-
-yaml
-Copiar código
-
----
-
-¿Quieres que te genere una **versión con insignias visuales** (badges de Kotlin, Firebase, Compose, etc.) para colocarla en la parte superior tipo banner de GitHub?  
-Ejemplo:  
-`![Kotlin](https://img.shields.io/badge/Kotlin-1.9-blue?logo=kotlin)`  
-Eso haría que el README se vea aún más profesional y visualmente impactante. ¿Quieres que te la agregue?
-
 
 
 
