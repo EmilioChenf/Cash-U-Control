@@ -68,7 +68,8 @@ fun AppNavigation(navController: NavHostController) {
             DashboardScreen(
                 onOpenIngresos = { navController.navigate("ingresos") },
                 onOpenGastos = { navController.navigate("gastos") },
-                onOpenAhorro = { navController.navigate("ahorro") }
+                onOpenAhorro = { navController.navigate("ahorro") },
+                onOpenNotificaciones = { navController.navigate("notificaciones") } // ✅ Nueva pantalla 🔔
             )
         }
 
@@ -113,6 +114,13 @@ fun AppNavigation(navController: NavHostController) {
             val plazoSeleccionado = backStackEntry.arguments?.getString("plazoSeleccionado") ?: "Mediano plazo"
             NuevoObjetivoScreen(
                 selectedPlazo = plazoSeleccionado,
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        // 🔔 Bandeja de entrada (Notificaciones)
+        composable("notificaciones") {
+            NotificacionesScreen(
                 onBackClick = { navController.popBackStack() }
             )
         }

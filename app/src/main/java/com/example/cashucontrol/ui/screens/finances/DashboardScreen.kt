@@ -26,7 +26,8 @@ import com.example.cashucontrol.ui.theme.CashUControlTheme
 fun DashboardScreen(
     onOpenIngresos: () -> Unit = {},
     onOpenGastos: () -> Unit = {},
-    onOpenAhorro: () -> Unit = {} // ✅ nuevo parámetro para abrir pantalla de Ahorro
+    onOpenAhorro: () -> Unit = {},
+    onOpenNotificaciones: () -> Unit = {} // ✅ nuevo parámetro
 ) {
     var selectedTab by remember { mutableStateOf("Ingresos") }
     var showContent by remember { mutableStateOf(false) }
@@ -39,7 +40,7 @@ fun DashboardScreen(
             .background(Color(0xFFF5F5F5))
             .verticalScroll(rememberScrollState())
     ) {
-        HeaderSection()
+        HeaderSection(onOpenNotificaciones = onOpenNotificaciones) // ✅ pasa el callback
         Spacer(modifier = Modifier.height(20.dp))
 
         AnimatedVisibility(
@@ -49,7 +50,7 @@ fun DashboardScreen(
             TopCardsSection(
                 onIngresosClick = onOpenIngresos,
                 onGastosClick = onOpenGastos,
-                onAhorroClick = onOpenAhorro // ✅ conectado correctamente
+                onAhorroClick = onOpenAhorro
             )
         }
 
@@ -94,7 +95,7 @@ fun DashboardScreen(
                 when (tab) {
                     "Ingresos" -> IngresosContent()
                     "Gastos" -> GastosContent()
-                    "Ahorro" -> AhorroPreviewContent() // 🔸 mantiene una vista previa del ahorro dentro del dashboard
+                    "Ahorro" -> AhorroPreviewContent()
                 }
             }
         }
@@ -104,7 +105,7 @@ fun DashboardScreen(
 // -------------------- ENCABEZADO --------------------
 
 @Composable
-fun HeaderSection() {
+fun HeaderSection(onOpenNotificaciones: () -> Unit = {}) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -117,7 +118,13 @@ fun HeaderSection() {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(Icons.Default.Notifications, contentDescription = null, tint = Color.White)
+                Icon(
+                    Icons.Default.Notifications,
+                    contentDescription = "Notificaciones",
+                    tint = Color.White,
+                    modifier = Modifier
+                        .clickable { onOpenNotificaciones() } // ✅ al presionar, abre Bandeja de entrada
+                )
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Hola ", color = Color.White, fontSize = 20.sp)
                     Text("Ana Sofía!", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
@@ -142,7 +149,6 @@ fun HeaderSection() {
         }
     }
 }
-
 // -------------------- TARJETAS SUPERIORES --------------------
 
 @Composable
