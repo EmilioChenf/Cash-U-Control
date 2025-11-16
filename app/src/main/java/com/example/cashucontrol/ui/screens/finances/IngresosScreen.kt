@@ -66,13 +66,77 @@ fun IngresosScreen(
 
         Spacer(Modifier.height(20.dp))
 
+        // META MENSUAL PANEL (DISEÑO ACTUALIZADO)
+        // ======================
+//   PANEL DE META
+// ======================
         Column(Modifier.padding(horizontal = 25.dp)) {
 
-            // META MENSUAL PANEL
-            Text("Meta mensual (${goalVM.currentMonth})", fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(10.dp))
+// 📅 Obtener mes actual en texto
+            val meses = listOf(
+                "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+            )
+
+            val hoy = remember { java.util.Calendar.getInstance() }
+            val mesActual = meses[hoy.get(java.util.Calendar.MONTH)]
+            val añoActual = hoy.get(java.util.Calendar.YEAR)
+
+// 📌 Mostrar fecha arriba del título
+            Text(
+                "$mesActual $añoActual",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Gray,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+
+            Spacer(Modifier.height(6.dp))
+            // 🔵 Título como tu diseño original
+            Text(
+                "Ingreso mensual asignado",
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A237E),
+                fontSize = 16.sp,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
 
             Spacer(Modifier.height(10.dp))
 
+            // 🔵 Caja estilo (Q. 2,500.00 Cambiar)
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(0xFFEDEDED))
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "Q. $meta",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1A237E)
+                    )
+                    Text(
+                        text = "Cambiar",
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.clickable { showEditGoal = true }
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(20.dp))
+
+            // ======================
+            //   PANEL DE PROGRESO
+            // ======================
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -80,9 +144,10 @@ fun IngresosScreen(
                     .background(Color(0xFFF5F5F5))
                     .padding(16.dp)
             ) {
+
                 Column {
 
-                    // Numeritos
+                    // 🔹 Parte superior (Acumulado / Meta)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -93,19 +158,26 @@ fun IngresosScreen(
 
                     Spacer(Modifier.height(14.dp))
 
-                    // PROGRESS BAR PROFESIONAL
-                    LinearProgressIndicator(
-                        progress = progreso.toFloat(),
-                        color = Color(0xFF00C853),
-                        trackColor = Color(0xFFE0E0E0),
+                    // 🔥 Barra de progreso ultra redondeada
+                    Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(14.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                    )
+                            .height(20.dp)
+                            .clip(RoundedCornerShape(50.dp))
+                            .background(Color(0xFFE0E0E0))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(progreso.toFloat())
+                                .height(20.dp)
+                                .clip(RoundedCornerShape(50.dp))
+                                .background(Color(0xFF00C853))
+                        )
+                    }
 
                     Spacer(Modifier.height(10.dp))
 
+                    // 🔹 Porcentaje + mensaje derecha
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -121,25 +193,14 @@ fun IngresosScreen(
                             fontWeight = FontWeight.Bold
                         )
                     }
-
-                    Spacer(Modifier.height(14.dp))
-
-                    // BOTÓN CAMBIAR META
-                    Box(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(Color(0xFFD9D9D9))
-                            .clickable { showEditGoal = true }
-                            .padding(horizontal = 12.dp, vertical = 6.dp)
-                    ) {
-                        Text("Cambiar meta", fontSize = 13.sp)
-                    }
                 }
             }
 
             Spacer(Modifier.height(25.dp))
 
-            // INGRESOS DEL MES
+            // ======================
+            //   LISTA DE INGRESOS DEL MES
+            // ======================
             Text("Ingresos del mes", fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(10.dp))
 
@@ -154,7 +215,9 @@ fun IngresosScreen(
 
             Spacer(Modifier.height(25.dp))
 
-            // BOTÓN AÑADIR INGRESO
+            // ======================
+            //   BOTÓN AÑADIR INGRESO
+            // ======================
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -166,7 +229,16 @@ fun IngresosScreen(
             ) {
                 Text("Añadir ingreso", color = Color.White, fontWeight = FontWeight.Bold)
             }
+
+            Spacer(Modifier.height(30.dp))
         }
+
+
+
+
+
+
+
     }
 
     // DIÁLOGO CAMBIAR META
