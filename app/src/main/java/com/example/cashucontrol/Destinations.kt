@@ -2,6 +2,7 @@ package com.example.cashucontrol.navigation
 
 import kotlinx.serialization.Serializable
 
+
 @Serializable data object Welcome
 @Serializable data object Login
 @Serializable data object Register
@@ -15,6 +16,14 @@ import kotlinx.serialization.Serializable
 
 @Serializable data object Ahorro
 @Serializable data class NuevoObjetivo(val plazoSeleccionado: String)
+
+@Serializable
+data class Currency(
+    val name: String,
+    val email: String,
+    val password: String
+)
+
 
 @Serializable data object Notificaciones
 @Serializable data object EditarPerfil

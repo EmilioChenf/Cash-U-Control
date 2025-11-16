@@ -6,23 +6,22 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.cashucontrol.ui.screens.WelcomeScreen
 import com.example.cashucontrol.ui.screens.*
 import com.example.cashucontrol.ui.screens.finances.*
 
 @Composable
 fun AppNavigation(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    startDestination: Any = Register // 👈 ahora admite pantalla inicial dinámica
 ) {
     val navController = rememberNavController()
 
     NavHost(
         navController = navController,
-        startDestination = Welcome,
+        startDestination = startDestination,
         modifier = modifier
     ) {
 
-        // --- Welcome ---
         composable<Welcome> {
             WelcomeScreen(
                 onLoginClick = { navController.navigate(Login) },
@@ -30,29 +29,30 @@ fun AppNavigation(
             )
         }
 
-        // --- Login ---
+        // --- LOGIN (MOVERLO AQUÍ) ---
         composable<Login> {
             LoginScreen(
                 onLoginSuccess = {
                     navController.navigate(Dashboard) {
-                        popUpTo(Welcome) { inclusive = true }
+                        popUpTo(Register) { inclusive = true }
                     }
-                }
+                },
+                onGoToRegister = { navController.navigate(Register) }
             )
         }
 
-        // --- Registro ---
+        // --- REGISTER ---
         composable<Register> {
             RegisterScreen(
                 onRegisterComplete = {
                     navController.navigate(Dashboard) {
-                        popUpTo(Welcome) { inclusive = true }
+                        popUpTo(Register) { inclusive = true }
                     }
-                }
+                },
+                onGoToLogin = { navController.navigate(Login) }
             )
         }
 
-        // --- Dashboard ---
         composable<Dashboard> {
             DashboardScreen(
                 onOpenIngresos = { navController.navigate(Ingresos) },
@@ -70,7 +70,6 @@ fun AppNavigation(
             )
         }
 
-        // --- Ingresos ---
         composable<Ingresos> {
             IngresosScreen(
                 onBackClick = { navController.popBackStack() },
@@ -84,7 +83,6 @@ fun AppNavigation(
             )
         }
 
-        // --- Gastos ---
         composable<Gastos> {
             GastosScreen(
                 onBackClick = { navController.popBackStack() },
@@ -98,7 +96,6 @@ fun AppNavigation(
             )
         }
 
-        // --- Ahorro ---
         composable<Ahorro> {
             AhorroScreen(
                 onBackClick = { navController.popBackStack() },
@@ -108,42 +105,34 @@ fun AppNavigation(
             )
         }
 
-        // --- Nuevo Objetivo (con argumento) ---
-        composable<NuevoObjetivo> { backStackEntry ->
-            val args = backStackEntry.toRoute<NuevoObjetivo>()
-
+        composable<NuevoObjetivo> { entry ->
+            val args = entry.toRoute<NuevoObjetivo>()
             NuevoObjetivoScreen(
                 selectedPlazo = args.plazoSeleccionado,
                 onBackClick = { navController.popBackStack() }
             )
         }
 
-        // --- Notificaciones ---
         composable<Notificaciones> {
-            NotificacionesScreen(
-                onBackClick = { navController.popBackStack() }
-            )
+            NotificacionesScreen(onBackClick = { navController.popBackStack() })
         }
 
-        // --- Editar Perfil ---
         composable<EditarPerfil> {
-            EditarPerfilScreen(
-                onBackClick = { navController.popBackStack() }
-            )
+            EditarPerfilScreen(onBackClick = { navController.popBackStack() })
         }
 
-        // --- Insignias ---
         composable<Insignias> {
-            InsigniasScreen(
-                onBackClick = { navController.popBackStack() }
-            )
+            InsigniasScreen(onBackClick = { navController.popBackStack() })
         }
 
-        // --- Centro de Ayuda ---
         composable<CentroAyuda> {
-            CentroAyudaScreen(
-                onBackClick = { navController.popBackStack() }
-            )
+            CentroAyudaScreen(onBackClick = { navController.popBackStack() })
         }
+
+
+
+
+
+
     }
 }

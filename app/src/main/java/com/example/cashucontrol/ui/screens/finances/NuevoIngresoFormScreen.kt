@@ -1,12 +1,8 @@
 package com.example.cashucontrol.ui.screens.finances
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
+import android.app.DatePickerDialog
 import androidx.compose.foundation.*
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -16,34 +12,48 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cashucontrol.models.Ingreso
+import com.example.cashucontrol.viewmodel.IngresosViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.util.*
 
-// ✅ IMPORTA la función IngresoChip desde IngresosScreen.kt
-import com.example.cashucontrol.ui.screens.finances.IngresoChip
-
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun NuevoIngresoFormScreen(onBackClick: () -> Unit) {
-    var amount by remember { mutableStateOf(TextFieldValue("Q.0.00")) }
+
+    val vm = remember { IngresosViewModel() }
+    val ingresosList by vm.ingresos.collectAsState()
+
+    var amount by remember { mutableStateOf(TextFieldValue("")) }
     var name by remember { mutableStateOf(TextFieldValue("")) }
     var date by remember { mutableStateOf(TextFieldValue("")) }
+    var type by remember { mutableStateOf("work") }
 
-    var isPressed by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+    var showEditDialog by remember { mutableStateOf(false) }
+    var selectedIngreso by remember { mutableStateOf<Ingreso?>(null) }
 
-    val scaleAnim by animateFloatAsState(
-        targetValue = if (isPressed) 0.85f else 1f,
-        animationSpec = tween(durationMillis = 150),
-        label = "Arrow Animation"
-    )
+    val context = LocalContext.current
+
+    // Calendario nativo Android
+    fun openCalendar() {
+        val calendar = Calendar.getInstance()
+        val dialog = DatePickerDialog(
+            context,
+            { _, y, m, d ->
+                date = TextFieldValue("$d/${m + 1}/$y")
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+        dialog.show()
+    }
 
     Column(
         modifier = Modifier
@@ -51,139 +61,208 @@ fun NuevoIngresoFormScreen(onBackClick: () -> Unit) {
             .background(Color.White)
             .verticalScroll(rememberScrollState())
     ) {
-        // 🟩 Encabezado verde con flecha y título
+
+        // HEADER
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFF00C853), RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
-                .padding(vertical = 25.dp, horizontal = 20.dp)
+                .padding(20.dp)
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-
-                // 🔙 Flecha con animación y retraso
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val interactionSource = remember { MutableInteractionSource() }
-
-                    Icon(
-                        Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = Color.Black,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .scale(scaleAnim)
-                            .clickable(interactionSource = interactionSource, indication = null) {
-                                isPressed = true
-                                coroutineScope.launch {
-                                    delay(150)
-                                    isPressed = false
-                                    onBackClick()
-                                }
-                            }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                // 🔲 Botón blanco con texto
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(25.dp))
-                        .background(Color.White)
-                        .padding(horizontal = 45.dp, vertical = 10.dp)
-                ) {
-                    Text(
-                        "Nuevo ingreso",
-                        color = Color(0xFF1A237E),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
-                }
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "", tint = Color.Black)
             }
+            Text(
+                "Nuevo ingreso",
+                modifier = Modifier.align(Alignment.Center),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A237E)
+            )
         }
 
-        Spacer(modifier = Modifier.height(25.dp))
+        Spacer(Modifier.height(20.dp))
 
-        // 🧾 Campos de ingreso
-        Column(modifier = Modifier.padding(horizontal = 25.dp)) {
+        // FORMULARIO
+        Column(Modifier.padding(horizontal = 25.dp)) {
+
             OutlinedTextField(
                 value = amount,
                 onValueChange = { amount = it },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-                textStyle = LocalTextStyle.current.copy(fontSize = 16.sp, color = Color.Black)
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Text("Nombre del ingreso", color = Color.Gray, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(6.dp))
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                placeholder = { Text("Escribe aquí", color = Color(0xFFB0B0B0)) },
-                singleLine = true,
+                label = { Text("Cantidad (Q)") },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(Modifier.height(10.dp))
 
-            Text("Fecha", color = Color.Gray, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(6.dp))
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nombre del ingreso") },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(10.dp))
+
             OutlinedTextField(
                 value = date,
                 onValueChange = { date = it },
-                placeholder = { Text("Día/mes/año", color = Color(0xFFB0B0B0)) },
-                singleLine = true,
+                label = { Text("Fecha") },
                 trailingIcon = {
-                    Icon(Icons.Default.CalendarToday, contentDescription = "Calendario", tint = Color.Gray)
+                    IconButton(onClick = { openCalendar() }) {
+                        Icon(Icons.Default.CalendarMonth, contentDescription = "")
+                    }
                 },
                 modifier = Modifier.fillMaxWidth()
             )
 
-            Spacer(modifier = Modifier.height(20.dp))
 
-            // 🟢 Botón verde
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFF00C853))
-                    .clickable { /* guardar ingreso */ }
-                    .padding(vertical = 12.dp),
-                contentAlignment = Alignment.Center
+            Spacer(Modifier.height(20.dp))
+
+            Button(
+                onClick = {
+                    if (name.text.isNotBlank() && amount.text.isNotBlank()) {
+                        vm.saveIngreso(
+                            name.text,
+                            amount.text.toDouble(),
+                            date.text,
+                            type
+                        )
+                        name = TextFieldValue("")
+                        amount = TextFieldValue("")
+                        date = TextFieldValue("")
+                    }
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(Color(0xFF00C853))
             ) {
-                Text("Guardar ingreso", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                Text("Guardar ingreso", color = Color.White)
             }
 
-            Spacer(modifier = Modifier.height(25.dp))
+            Spacer(Modifier.height(30.dp))
 
-            // 📋 Lista de ingresos guardados
-            Text("Mis ingresos guardados", fontWeight = FontWeight.Bold, color = Color.Gray)
-            Spacer(modifier = Modifier.height(10.dp))
+            Text("Mis ingresos guardados", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Spacer(Modifier.height(10.dp))
 
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                IngresoChip(Icons.Default.Work, "Trabajo medio tiempo", "Q.1000")
-                IngresoChip(Icons.Default.LaptopMac, "Freelancer", "Q.500")
-                IngresoChip(Icons.Default.AccountBalanceWallet, "Mesada", "Q.500")
+            ingresosList.forEach { ingreso ->
+                IngresoItem(ingreso = ingreso, onClick = {
+                    selectedIngreso = ingreso
+                    showEditDialog = true
+                })
+                Spacer(Modifier.height(10.dp))
             }
-
-            Spacer(modifier = Modifier.height(25.dp))
         }
     }
+
+    // DIALOGO DE EDITAR
+    if (showEditDialog && selectedIngreso != null) {
+        EditIngresoDialog(
+            ingreso = selectedIngreso!!,
+            onDismiss = { showEditDialog = false },
+            onDelete = {
+                vm.deleteIngreso(selectedIngreso!!.id)
+                showEditDialog = false
+            },
+            onSave = { n, a, d, t ->
+                vm.updateIngreso(selectedIngreso!!.id, n, a, d, t)
+                showEditDialog = false
+            }
+        )
+    }
 }
-@Preview(showBackground = true)
+
 @Composable
-fun PreviewNuevoIngresoForm() {
-    NuevoIngresoFormScreen(
-        onBackClick = {}
+fun IngresoItem(ingreso: Ingreso, onClick: () -> Unit) {
+
+    val icon = when (ingreso.type) {
+        "freelance" -> Icons.Default.LaptopMac
+        "wallet" -> Icons.Default.AccountBalanceWallet
+        else -> Icons.Default.Work
+    }
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFF1F1F1))
+            .clickable { onClick() }
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier.size(32.dp).clip(CircleShape).background(Color(0xFF00C853)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(icon, "", tint = Color.White)
+            }
+            Spacer(Modifier.width(8.dp))
+            Column {
+                Text(ingreso.name, fontWeight = FontWeight.Bold)
+                Text(ingreso.date, fontSize = 12.sp, color = Color.Gray)
+            }
+        }
+        Text("Q${ingreso.amount}", fontWeight = FontWeight.Bold)
+    }
+}
+
+// CHIP DE TIPO
+@Composable
+fun TipoChip(value: String, label: String, selected: String, onSelect: (String) -> Unit) {
+    Box(
+        modifier = Modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(if (selected == value) Color(0xFF00C853) else Color(0xFFE0E0E0))
+            .clickable { onSelect(value) }
+            .padding(horizontal = 12.dp, vertical = 6.dp)
+    ) {
+        Text(label, color = if (selected == value) Color.White else Color.Black)
+    }
+}
+
+// DIALOGO DE EDICIÓN PROFESIONAL
+@Composable
+fun EditIngresoDialog(
+    ingreso: Ingreso,
+    onDismiss: () -> Unit,
+    onDelete: () -> Unit,
+    onSave: (String, Double, String, String) -> Unit
+) {
+
+    var name by remember { mutableStateOf(ingreso.name) }
+    var amount by remember { mutableStateOf(ingreso.amount.toString()) }
+    var date by remember { mutableStateOf(ingreso.date) }
+    var type by remember { mutableStateOf(ingreso.type) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Editar ingreso") },
+        text = {
+            Column {
+                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nombre") })
+
+                Spacer(Modifier.height(10.dp))
+
+                OutlinedTextField(value = amount, onValueChange = { amount = it }, label = { Text("Monto") })
+
+                Spacer(Modifier.height(10.dp))
+
+                OutlinedTextField(value = date, onValueChange = { date = it }, label = { Text("Fecha") })
+
+                Spacer(Modifier.height(10.dp))
+
+                Text("Tipo de ingreso")
+
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onSave(name, amount.toDoubleOrNull() ?: 0.0, date, type)
+            }) { Text("Guardar") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDelete) { Text("Eliminar", color = Color.Red) }
+        }
     )
 }

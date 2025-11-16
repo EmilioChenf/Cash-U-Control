@@ -25,11 +25,11 @@ val NavyBlue = Color(0xFF001F54)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    onRegisterComplete: () -> Unit   // ✔ CAMBIO: ahora es solo Unit
+    onRegisterComplete: (String) -> Unit,
+    onGoToLogin: () -> Unit   // 👈 NUEVO
 ) {
     val viewModel = remember { AuthViewModel() }
-
-    var step by remember { mutableStateOf(1) } // Paso 1 o 2
+    var step by remember { mutableStateOf(1) }
 
     var name by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
@@ -43,7 +43,7 @@ fun RegisterScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Header
+        // HEADER
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -81,10 +81,11 @@ fun RegisterScreen(
                 .padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Spacer(modifier = Modifier.height(32.dp))
 
             if (step == 1) {
-                // Paso 1: datos del usuario
+
                 Text("Nombre", fontSize = 14.sp, color = Color.Gray)
                 OutlinedTextField(
                     value = name,
@@ -148,8 +149,16 @@ fun RegisterScreen(
                 ) {
                     Text("Siguiente", fontSize = 16.sp)
                 }
+
+                Spacer(modifier = Modifier.height(20.dp))
+
+                // ⭐ NUEVO → BOTÓN PARA IR A LOGIN
+                TextButton(onClick = { onGoToLogin() }) {
+                    Text("¿Ya tienes cuenta? Iniciar sesión", color = NavyBlue)
+                }
+
             } else {
-                // Paso 2: selección de moneda
+
                 Text(
                     text = "Bienvenido, $name 👋",
                     style = MaterialTheme.typography.headlineSmall,
@@ -214,18 +223,15 @@ fun RegisterScreen(
                             password = password,
                             onSuccess = { userId ->
                                 val db = FirebaseDatabase.getInstance().getReference("users")
-                                val userMap = mapOf(
+                                val map = mapOf(
                                     "name" to name,
                                     "email" to email,
                                     "currency" to selectedCurrency
                                 )
-                                db.child(userId).setValue(userMap)
-
-                                onRegisterComplete()    // ✔ NAVEGACIÓN TIPADA
+                                db.child(userId).setValue(map)
+                                onRegisterComplete(name)
                             },
-                            onError = { error ->
-                                println("Error al registrar usuario: $error")
-                            }
+                            onError = { println("ERROR: $it") }
                         )
                     },
                     modifier = Modifier

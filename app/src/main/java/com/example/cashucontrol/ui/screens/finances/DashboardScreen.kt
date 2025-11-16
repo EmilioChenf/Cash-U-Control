@@ -22,6 +22,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.example.cashucontrol.ui.theme.CashUControlTheme
+// -------------------- IMPORTS NUEVOS --------------------
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
+
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun DashboardScreen(
@@ -144,6 +148,26 @@ fun HeaderSection(
     onOpenNotificaciones: () -> Unit = {},
     onProfileClick: () -> Unit = {}
 ) {
+    // 🔵 Para cargar el nombre real
+    var userName by remember { mutableStateOf("Cargando...") }
+
+    // 🟦 OBTENER UID DEL USUARIO ACTUAL
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+    // 🟩 Cargar nombre desde Firebase
+    LaunchedEffect(userId) {
+        if (userId != null) {
+            val ref = FirebaseDatabase.getInstance()
+                .getReference("users")
+                .child(userId)
+                .child("name")
+
+            ref.get().addOnSuccessListener { snapshot ->
+                userName = snapshot.getValue(String::class.java) ?: "Usuario"
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -151,6 +175,8 @@ fun HeaderSection(
             .padding(horizontal = 20.dp, vertical = 25.dp)
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+
+            // --- Primera fila ---
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -162,21 +188,31 @@ fun HeaderSection(
                     tint = Color.White,
                     modifier = Modifier.clickable { onOpenNotificaciones() }
                 )
+
+                // 🔵 AQUÍ MOSTRAMOS EL NOMBRE REAL
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text("Hola ", color = Color.White, fontSize = 20.sp)
-                    Text("Ana Sofía!", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text(
+                        userName,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
                 }
+
                 Icon(
                     Icons.Default.AccountCircle,
                     contentDescription = "Perfil",
                     tint = Color.White,
                     modifier = Modifier
                         .size(32.dp)
-                        .clickable { onProfileClick() } // ✅ abre menú flotante
+                        .clickable { onProfileClick() }
                 )
             }
 
             Spacer(modifier = Modifier.height(20.dp))
+
+            // --- Tarjeta blanca con saldo ---
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
@@ -188,11 +224,13 @@ fun HeaderSection(
                     Text("Q. 3,300.00", color = Color.Black, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 }
             }
+
             Spacer(modifier = Modifier.height(10.dp))
             Text("Pequeños pasos crean grandes logros.", color = Color(0xFFD0D0D0), fontSize = 13.sp)
         }
     }
 }
+
 @Composable
 fun ProfilePopup(
     onDismiss: () -> Unit,

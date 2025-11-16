@@ -1,5 +1,6 @@
 package com.example.cashucontrol.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -11,100 +12,89 @@ import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
+import com.example.cashucontrol.viewmodel.AuthViewModel
 
 @Composable
 fun LoginScreen(
-    onLoginSuccess: () -> Unit   // ✔ Antes recibía un String, ahora NO necesitamos enviar nada
+    onLoginSuccess: () -> Unit,
+    onGoToRegister: () -> Unit   // 👈 NUEVO
 ) {
-    val auth = FirebaseAuth.getInstance()
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var loading by remember { mutableStateOf(false) }
+    val viewModel = remember { AuthViewModel() }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp, vertical = 48.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .background(Color.White)
+            .padding(32.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // Título principal
+
+        Spacer(modifier = Modifier.height(80.dp))
+
         Text(
-            text = "Iniciar Sesión",
-            style = MaterialTheme.typography.headlineMedium,
-            color = NavyBlue
+            "Iniciar Sesión",
+            fontSize = 26.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF001F54)
         )
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // Campo de email
+        // --- Correo
         OutlinedTextField(
             value = email,
             onValueChange = { email = it },
             label = { Text("Correo electrónico") },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = NavyBlue,
-                unfocusedIndicatorColor = Color.LightGray,
-                focusedLabelColor = NavyBlue,
-                cursorColor = NavyBlue
-            )
+            shape = RoundedCornerShape(12.dp)
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Campo de contraseña
+        // --- Contraseña
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Contraseña") },
             visualTransformation = PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
-            colors = TextFieldDefaults.colors(
-                focusedIndicatorColor = NavyBlue,
-                unfocusedIndicatorColor = Color.LightGray,
-                focusedLabelColor = NavyBlue,
-                cursorColor = NavyBlue
-            )
+            shape = RoundedCornerShape(12.dp)
         )
 
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        // Botón de inicio de sesión
+        // --- BOTÓN ENTRAR
         Button(
             onClick = {
-                loading = true
-                auth.signInWithEmailAndPassword(email, password)
-                    .addOnSuccessListener {
-                        onLoginSuccess()   // ✔ NAVEGACIÓN TIPADA: no mandamos strings
-                    }
-                    .addOnFailureListener { e ->
-                        errorMessage = e.message
-                        loading = false
-                    }
+                viewModel.loginUser(
+                    email = email,
+                    password = password,
+                    onSuccess = { onLoginSuccess() },
+                    onError = { println("Error al iniciar sesión") }
+                )
             },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp),
-            shape = RoundedCornerShape(12.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = NavyBlue)
+                .height(56.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF001F54)),
+            shape = RoundedCornerShape(12.dp)
         ) {
             Text("Entrar", color = Color.White)
         }
 
-        // Indicador de carga
-        if (loading) {
-            Spacer(modifier = Modifier.height(20.dp))
-            CircularProgressIndicator(color = NavyBlue)
-        }
+        Spacer(modifier = Modifier.height(24.dp))
 
-        // Mensaje de error
-        errorMessage?.let {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(it, color = MaterialTheme.colorScheme.error)
+        // ⭐⭐⭐ BOTÓN NUEVO: IR A REGISTRO ⭐⭐⭐
+        TextButton(onClick = { onGoToRegister() }) {
+            Text(
+                "¿No tienes cuenta? Crear cuenta",
+                color = Color(0xFF001F54),
+                fontWeight = FontWeight.Medium
+            )
         }
     }
 }
