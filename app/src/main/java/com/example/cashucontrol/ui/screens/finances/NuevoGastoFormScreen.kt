@@ -24,6 +24,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -187,3 +188,11 @@ fun NuevoGastoFormScreen(
         }
     }
 }
+@Preview(showBackground = true)
+@Composable
+fun PreviewNuevoGastoFormScreen() {
+    NuevoGastoFormScreen(
+        onBackClick = {}
+    )
+}
+

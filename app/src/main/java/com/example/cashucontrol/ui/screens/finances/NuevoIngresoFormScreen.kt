@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
@@ -178,4 +179,11 @@ fun NuevoIngresoFormScreen(onBackClick: () -> Unit) {
             Spacer(modifier = Modifier.height(25.dp))
         }
     }
+}
+@Preview(showBackground = true)
+@Composable
+fun PreviewNuevoIngresoForm() {
+    NuevoIngresoFormScreen(
+        onBackClick = {}
+    )
 }

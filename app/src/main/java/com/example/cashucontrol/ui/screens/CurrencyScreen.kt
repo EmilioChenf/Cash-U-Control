@@ -15,7 +15,7 @@ fun CurrencyScreen(
     name: String,
     email: String,
     password: String,
-    onCompleteRegistration: (String) -> Unit
+    onCompleteRegistration: () -> Unit   // ✔ CAMBIO: ya no enviamos String
 ) {
     var selectedCurrency by remember { mutableStateOf("GTQ") }
     var expanded by remember { mutableStateOf(false) }
@@ -53,7 +53,7 @@ fun CurrencyScreen(
                     IconButton(onClick = { expanded = !expanded }) {
                         Icon(
                             imageVector = if (expanded) Icons.Default.KeyboardArrowUp else Icons.Default.ArrowDropDown,
-                            contentDescription = "Seleciona tu moneda"
+                            contentDescription = "Selecciona tu moneda"
                         )
                     }
                 },
@@ -78,7 +78,10 @@ fun CurrencyScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
-            onClick = { onCompleteRegistration(selectedCurrency) },
+            onClick = {
+                // ✔ AQUÍ NO NAVEGAMOS CON STRINGS
+                onCompleteRegistration()
+            },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Iniciar")

@@ -2,6 +2,10 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
+    // Necesario para rutas @Serializable en Navigation
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.21"
+
     id("com.google.gms.google-services")
 }
 
@@ -62,11 +66,18 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.3.0")
     implementation("androidx.compose.material:material:1.7.0")
     implementation("androidx.compose.material:material-icons-extended")
+
     // --- Firebase ---
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-auth-ktx")
     implementation("com.google.firebase:firebase-firestore-ktx")
     implementation("com.google.firebase:firebase-database-ktx")
+
+    // --- Navigation Compose ---
+    implementation("androidx.navigation:navigation-compose:2.8.3")
+
+    // --- Kotlin Serialization (NECESARIO para navigation type-safe)
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
 
     // --- Testing ---
     testImplementation(libs.junit)
@@ -78,8 +89,4 @@ dependencies {
     // --- Debug Tools ---
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-    // Navegación en Jetpack Compose
-    implementation("androidx.navigation:navigation-compose:2.8.3")
-
 }

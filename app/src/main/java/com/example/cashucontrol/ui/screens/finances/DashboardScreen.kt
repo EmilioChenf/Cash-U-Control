@@ -25,15 +25,15 @@ import com.example.cashucontrol.ui.theme.CashUControlTheme
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun DashboardScreen(
-    onOpenIngresos: () -> Unit = {},
-    onOpenGastos: () -> Unit = {},
-    onOpenAhorro: () -> Unit = {},
-    onOpenNotificaciones: () -> Unit = {},
-    onEditProfile: () -> Unit = {},
-    onViewInsignias: () -> Unit = {},
-    onHelpCenter: () -> Unit = {},
-    onLogout: () -> Unit = {}
-) {
+    onOpenIngresos: () -> Unit,
+    onOpenGastos: () -> Unit,
+    onOpenAhorro: () -> Unit,
+    onOpenNotificaciones: () -> Unit,
+    onEditProfile: () -> Unit,
+    onViewInsignias: () -> Unit,
+    onHelpCenter: () -> Unit,
+    onLogout: () -> Unit
+){
     var selectedTab by remember { mutableStateOf("Ingresos") }
     var showContent by remember { mutableStateOf(false) }
     var showProfileMenu by remember { mutableStateOf(false) }
@@ -556,6 +556,15 @@ fun MovementItem(title: String, date: String, amount: String, color: Color) {
 @Composable
 fun PreviewDashboardScreen() {
     CashUControlTheme {
-        DashboardScreen()
+        DashboardScreen(
+            onOpenIngresos = {},
+            onOpenGastos = {},
+            onOpenAhorro = {},
+            onOpenNotificaciones = {},
+            onEditProfile = {},
+            onViewInsignias = {},
+            onHelpCenter = {},
+            onLogout = {}
+        )
     }
 }

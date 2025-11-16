@@ -18,8 +18,8 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun WelcomeScreen(
-    onLoginClick: () -> Unit,
-    onRegisterClick: () -> Unit
+    onLoginClick: () -> Unit,      // ✔ Correcto para navegación tipada
+    onRegisterClick: () -> Unit    // ✔ Correcto
 ) {
     val darkBlue = Color(0xFF0A2463)
     val lightGray = Color(0xFFB0B0B0)
@@ -27,7 +27,7 @@ fun WelcomeScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White) // 👈 fondo visible asegurado
+            .background(Color.White)
             .padding(horizontal = 32.dp),
         contentAlignment = Alignment.Center
     ) {

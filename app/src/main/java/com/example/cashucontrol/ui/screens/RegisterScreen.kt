@@ -20,14 +20,12 @@ import androidx.compose.ui.unit.sp
 import com.google.firebase.database.FirebaseDatabase
 import com.example.cashucontrol.viewmodel.AuthViewModel
 
-
-// Define tu color azul principal
 val NavyBlue = Color(0xFF001F54)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen(
-    onRegisterComplete: (String) -> Unit
+    onRegisterComplete: () -> Unit   // ✔ CAMBIO: ahora es solo Unit
 ) {
     val viewModel = remember { AuthViewModel() }
 
@@ -45,7 +43,7 @@ fun RegisterScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        // Header (igual estilo que el ejemplo)
+        // Header
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -77,7 +75,6 @@ fun RegisterScreen(
             )
         }
 
-        // Contenido principal
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -87,8 +84,7 @@ fun RegisterScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             if (step == 1) {
-                // Paso 1: Datos del usuario
-                // Nombre
+                // Paso 1: datos del usuario
                 Text("Nombre", fontSize = 14.sp, color = Color.Gray)
                 OutlinedTextField(
                     value = name,
@@ -105,7 +101,6 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Email
                 Text("Correo electrónico", fontSize = 14.sp, color = Color.Gray)
                 OutlinedTextField(
                     value = email,
@@ -122,7 +117,6 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Contraseña
                 Text("Contraseña", fontSize = 14.sp, color = Color.Gray)
                 OutlinedTextField(
                     value = password,
@@ -140,7 +134,6 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Botón siguiente
                 Button(
                     onClick = {
                         if (name.isNotBlank() && email.isNotBlank() && password.isNotBlank()) {
@@ -156,7 +149,7 @@ fun RegisterScreen(
                     Text("Siguiente", fontSize = 16.sp)
                 }
             } else {
-                // Paso 2: Selección de moneda
+                // Paso 2: selección de moneda
                 Text(
                     text = "Bienvenido, $name 👋",
                     style = MaterialTheme.typography.headlineSmall,
@@ -214,7 +207,6 @@ fun RegisterScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Botón Iniciar
                 Button(
                     onClick = {
                         viewModel.registerUser(
@@ -228,7 +220,8 @@ fun RegisterScreen(
                                     "currency" to selectedCurrency
                                 )
                                 db.child(userId).setValue(userMap)
-                                onRegisterComplete(name)
+
+                                onRegisterComplete()    // ✔ NAVEGACIÓN TIPADA
                             },
                             onError = { error ->
                                 println("Error al registrar usuario: $error")

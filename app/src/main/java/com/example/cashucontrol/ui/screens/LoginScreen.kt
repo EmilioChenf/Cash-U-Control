@@ -12,11 +12,9 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import androidx.compose.ui.graphics.Color
 
-
-
 @Composable
 fun LoginScreen(
-    onLoginSuccess: (String) -> Unit
+    onLoginSuccess: () -> Unit   // ✔ Antes recibía un String, ahora NO necesitamos enviar nada
 ) {
     val auth = FirebaseAuth.getInstance()
     var email by remember { mutableStateOf("") }
@@ -81,17 +79,7 @@ fun LoginScreen(
                 loading = true
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnSuccessListener {
-                        val userId = auth.currentUser?.uid
-                        if (userId != null) {
-                            val dbRef = FirebaseDatabase.getInstance()
-                                .getReference("users")
-                                .child(userId)
-
-                            dbRef.get().addOnSuccessListener { snapshot ->
-                                val name = snapshot.child("name").getValue(String::class.java) ?: "Usuario"
-                                onLoginSuccess(name)
-                            }
-                        }
+                        onLoginSuccess()   // ✔ NAVEGACIÓN TIPADA: no mandamos strings
                     }
                     .addOnFailureListener { e ->
                         errorMessage = e.message

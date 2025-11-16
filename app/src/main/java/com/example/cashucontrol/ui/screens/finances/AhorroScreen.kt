@@ -27,7 +27,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun AhorroScreen(
     onBackClick: () -> Unit,
-    onAddObjetivoClick: (String) -> Unit // 👈 agregado para navegación
+    onAddObjetivoClick: (String) -> Unit  // ✔ Esto está correcto
 ) {
     var metaTab by remember { mutableStateOf("Mediano plazo") }
     var isPressed by remember { mutableStateOf(false) }

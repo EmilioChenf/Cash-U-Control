@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.ui.tooling.preview.Preview
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -267,4 +268,12 @@ fun IngresoChip(icon: androidx.compose.ui.graphics.vector.ImageVector, title: St
         Spacer(modifier = Modifier.width(6.dp))
         Text(amount, color = Color.Gray, fontSize = 12.sp)
     }
+}
+@Preview(showBackground = true)
+@Composable
+fun PreviewIngresosScreen() {
+    IngresosScreen(
+        onBackClick = {},
+        onAddIngresoClick = {}
+    )
 }
