@@ -2,10 +2,8 @@ package com.example.cashucontrol.ui.screens.finances
 
 import android.app.DatePickerDialog
 import androidx.compose.animation.*
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.*
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,7 +14,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -45,32 +42,69 @@ fun AhorroScreen(
             .background(Color.White)
     ) {
 
-        // HEADER ============================================
+        // ============================================================
+        // HEADER con CERDITO (DISEÑO PROFESIONAL)
+        // ============================================================
         Box(
             Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFFFEB3B), RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
-                .padding(20.dp)
+                .background(
+                    Color(0xFFFFEB3B),
+                    RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp)
+                )
+                .padding(vertical = 25.dp, horizontal = 20.dp)
         ) {
 
-            IconButton(onClick = onBackClick) {
-                Icon(Icons.Default.ArrowBack, "", tint = Color.Black)
-            }
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
 
-            Text(
-                "Ahorro",
-                Modifier.align(Alignment.Center),
-                fontWeight = FontWeight.Bold,
-                fontSize = 18.sp,
-                color = Color(0xFF1A237E)
-            )
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.align(Alignment.Start)
+                ) {
+                    Icon(Icons.Default.ArrowBack, "", tint = Color.Black)
+                }
+
+                Spacer(Modifier.height(12.dp))
+
+                // Caja blanca con texto + cerdito
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(25.dp))
+                        .background(Color.White)
+                        .padding(horizontal = 40.dp, vertical = 10.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+
+                        Text(
+                            "Ahorro",
+                            color = Color(0xFF1A237E),
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp
+                        )
+
+                        Spacer(Modifier.width(8.dp))
+
+                        Icon(
+                            Icons.Default.Savings,
+                            contentDescription = null,
+                            tint = Color(0xFF1A237E),
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
         }
 
         Spacer(Modifier.height(25.dp))
 
         Column(Modifier.padding(horizontal = 25.dp)) {
 
-            // TABS ============================================
+            // ============================================================
+            // TABS
+            // ============================================================
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -80,10 +114,14 @@ fun AhorroScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 listOf("Corto plazo", "Mediano plazo", "Largo plazo").forEach { tab ->
+
                     Box(
                         Modifier
                             .clip(RoundedCornerShape(10.dp))
-                            .background(if (metaTab == tab) Color(0xFFFFEB3B) else Color.Transparent)
+                            .background(
+                                if (metaTab == tab) Color(0xFFFFEB3B)
+                                else Color.Transparent
+                            )
                             .clickable { metaTab = tab }
                             .padding(horizontal = 16.dp, vertical = 8.dp)
                     ) {
@@ -98,21 +136,60 @@ fun AhorroScreen(
 
             Spacer(Modifier.height(25.dp))
 
-            val metasFiltradas = ahorros.filter { it.plazo == metaTab }
+            // ============================================================
+            // ANIMACIÓN ENTRE PESTAÑAS
+            // ============================================================
+            AnimatedContent(
+                targetState = metaTab,
+                transitionSpec = {
+                    slideInVertically(
+                        animationSpec = tween(300),
+                        initialOffsetY = { fullHeight ->
+                            when (targetState) {
+                                "Corto plazo" -> -fullHeight
+                                "Largo plazo" -> fullHeight
+                                else -> fullHeight / 3
+                            }
+                        }
+                    ) + fadeIn(animationSpec = tween(300)) togetherWith
+                            slideOutVertically(
+                                animationSpec = tween(300),
+                                targetOffsetY = { fullHeight ->
+                                    when (initialState) {
+                                        "Corto plazo" -> fullHeight
+                                        "Largo plazo" -> -fullHeight
+                                        else -> -fullHeight / 3
+                                    }
+                                }
+                            ) + fadeOut(animationSpec = tween(300))
+                },
+                label = ""
+            ) { tab ->
 
-            Text("Objetivos de $metaTab", fontWeight = FontWeight.Bold)
+                val metas = ahorros.filter { it.plazo == tab }
 
-            Spacer(Modifier.height(15.dp))
+                Column {
 
-            metasFiltradas.forEach { objetivo ->
-                AhorroCard(
-                    ahorro = objetivo,
-                    onAporteClick = { showAporteDialog = objetivo }
-                )
-                Spacer(Modifier.height(20.dp))
+                    Text("Objetivos de $tab", fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.height(15.dp))
+
+                    metas.forEach { objetivo ->
+
+                        AhorroCard(
+                            ahorro = objetivo,
+                            onAporteClick = { showAporteDialog = objetivo }
+                        )
+
+                        Spacer(Modifier.height(20.dp))
+                    }
+                }
             }
 
-            // BOTÓN NUEVO OBJETIVO =======================
+            Spacer(Modifier.height(30.dp))
+
+            // ============================================================
+            // BOTÓN AÑADIR NUEVO OBJETIVO
+            // ============================================================
             Box(
                 Modifier
                     .fillMaxWidth()
@@ -125,10 +202,13 @@ fun AhorroScreen(
                 Text("Añadir nuevo objetivo", fontWeight = FontWeight.Bold)
             }
 
-            Spacer(Modifier.height(50.dp))
+            Spacer(Modifier.height(60.dp))
         }
     }
 
+    // ============================================================
+    // DIÁLOGO PARA AGREGAR AHORRO
+    // ============================================================
     if (showAporteDialog != null) {
         DialogAgregarAporte(
             ahorro = showAporteDialog!!,
@@ -144,8 +224,7 @@ fun AhorroScreen(
 @Composable
 fun AhorroCard(ahorro: Ahorro, onAporteClick: () -> Unit) {
 
-    val progreso = (ahorro.totalSaved / ahorro.goalAmount)
-        .coerceIn(0.0, 1.0)
+    val progreso = (ahorro.totalSaved / ahorro.goalAmount).coerceIn(0.0, 1.0)
 
     Box(
         Modifier
@@ -165,7 +244,6 @@ fun AhorroCard(ahorro: Ahorro, onAporteClick: () -> Unit) {
 
             Spacer(Modifier.height(12.dp))
 
-            // BOTÓN APORTAR
             Box(
                 Modifier
                     .fillMaxWidth()
@@ -180,7 +258,6 @@ fun AhorroCard(ahorro: Ahorro, onAporteClick: () -> Unit) {
 
             Spacer(Modifier.height(15.dp))
 
-            // PROGRESS BAR
             Box(
                 Modifier
                     .fillMaxWidth()
@@ -192,7 +269,6 @@ fun AhorroCard(ahorro: Ahorro, onAporteClick: () -> Unit) {
                     Modifier
                         .fillMaxWidth(progreso.toFloat())
                         .height(18.dp)
-                        .clip(RoundedCornerShape(50.dp))
                         .background(Color(0xFF00C853))
                 )
             }
