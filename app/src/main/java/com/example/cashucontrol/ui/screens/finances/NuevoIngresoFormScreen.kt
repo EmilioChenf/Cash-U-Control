@@ -20,8 +20,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cashucontrol.models.Ingreso
 import com.example.cashucontrol.viewmodel.IngresosViewModel
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import java.util.*
 
 @Composable
@@ -40,10 +38,10 @@ fun NuevoIngresoFormScreen(onBackClick: () -> Unit) {
 
     val context = LocalContext.current
 
-    // Calendario nativo Android
+    // 📅 Calendario
     fun openCalendar() {
         val calendar = Calendar.getInstance()
-        val dialog = DatePickerDialog(
+        DatePickerDialog(
             context,
             { _, y, m, d ->
                 date = TextFieldValue("$d/${m + 1}/$y")
@@ -51,8 +49,7 @@ fun NuevoIngresoFormScreen(onBackClick: () -> Unit) {
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH),
             calendar.get(Calendar.DAY_OF_MONTH)
-        )
-        dialog.show()
+        ).show()
     }
 
     Column(
@@ -62,7 +59,9 @@ fun NuevoIngresoFormScreen(onBackClick: () -> Unit) {
             .verticalScroll(rememberScrollState())
     ) {
 
-        // HEADER
+        // ============================
+        // 🔵 HEADER
+        // ============================
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -83,7 +82,9 @@ fun NuevoIngresoFormScreen(onBackClick: () -> Unit) {
 
         Spacer(Modifier.height(20.dp))
 
-        // FORMULARIO
+        // ============================
+        // 📝 FORMULARIO
+        // ============================
         Column(Modifier.padding(horizontal = 25.dp)) {
 
             OutlinedTextField(
@@ -116,9 +117,11 @@ fun NuevoIngresoFormScreen(onBackClick: () -> Unit) {
                 modifier = Modifier.fillMaxWidth()
             )
 
-
             Spacer(Modifier.height(20.dp))
 
+            // ============================
+            // 🟩 BOTÓN GUARDAR
+            // ============================
             Button(
                 onClick = {
                     if (name.text.isNotBlank() && amount.text.isNotBlank()) {
@@ -141,20 +144,31 @@ fun NuevoIngresoFormScreen(onBackClick: () -> Unit) {
 
             Spacer(Modifier.height(30.dp))
 
+            // ============================
+            // 📋 LISTA DE INGRESOS
+            // ============================
             Text("Mis ingresos guardados", fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Spacer(Modifier.height(10.dp))
 
             ingresosList.forEach { ingreso ->
-                IngresoItem(ingreso = ingreso, onClick = {
-                    selectedIngreso = ingreso
-                    showEditDialog = true
-                })
+                IngresoItem(
+                    ingreso = ingreso,
+                    onEdit = {
+                        selectedIngreso = ingreso
+                        showEditDialog = true
+                    },
+                    onDelete = {
+                        vm.deleteIngreso(ingreso.id)
+                    }
+                )
                 Spacer(Modifier.height(10.dp))
             }
         }
     }
 
-    // DIALOGO DE EDITAR
+    // ============================
+    // 🟦 DIÁLOGO DE EDITAR
+    // ============================
     if (showEditDialog && selectedIngreso != null) {
         EditIngresoDialog(
             ingreso = selectedIngreso!!,
@@ -171,57 +185,44 @@ fun NuevoIngresoFormScreen(onBackClick: () -> Unit) {
     }
 }
 
+// ======================================================================
+// 🔵 ITEM PROFESIONAL (ICONO + NOMBRE + FECHA + MONTO + EDITAR + ELIMINAR)
+// ======================================================================
 @Composable
-fun IngresoItem(ingreso: Ingreso, onClick: () -> Unit) {
-
-    val icon = when (ingreso.type) {
-        "freelance" -> Icons.Default.LaptopMac
-        "wallet" -> Icons.Default.AccountBalanceWallet
-        else -> Icons.Default.Work
-    }
-
+fun IngresoItem(
+    ingreso: Ingreso,
+    onEdit: () -> Unit,
+    onDelete: () -> Unit
+) {
     Row(
-        modifier = Modifier
+        Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(12.dp))
             .background(Color(0xFFF1F1F1))
-            .clickable { onClick() }
             .padding(12.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier.size(32.dp).clip(CircleShape).background(Color(0xFF00C853)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(icon, "", tint = Color.White)
-            }
-            Spacer(Modifier.width(8.dp))
-            Column {
-                Text(ingreso.name, fontWeight = FontWeight.Bold)
-                Text(ingreso.date, fontSize = 12.sp, color = Color.Gray)
-            }
+
+        Column(Modifier.weight(1f)) {
+            Text(ingreso.name, fontWeight = FontWeight.Bold)
+            Text(ingreso.date, fontSize = 12.sp, color = Color.Gray)
         }
-        Text("Q${ingreso.amount}", fontWeight = FontWeight.Bold)
+
+        Text("Q${ingreso.amount}", fontWeight = FontWeight.Bold, modifier = Modifier.padding(end = 8.dp))
+
+        IconButton(onClick = onEdit) {
+            Icon(Icons.Default.Edit, contentDescription = "Editar")
+        }
+        IconButton(onClick = onDelete) {
+            Icon(Icons.Default.Delete, contentDescription = "Eliminar", tint = Color.Red)
+        }
     }
 }
 
-// CHIP DE TIPO
-@Composable
-fun TipoChip(value: String, label: String, selected: String, onSelect: (String) -> Unit) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (selected == value) Color(0xFF00C853) else Color(0xFFE0E0E0))
-            .clickable { onSelect(value) }
-            .padding(horizontal = 12.dp, vertical = 6.dp)
-    ) {
-        Text(label, color = if (selected == value) Color.White else Color.Black)
-    }
-}
-
-// DIALOGO DE EDICIÓN PROFESIONAL
+// ======================================================================
+// 🟦 DIÁLOGO DE EDICIÓN (IGUAL A GASTOS PERO VERDE)
+// ======================================================================
 @Composable
 fun EditIngresoDialog(
     ingreso: Ingreso,
@@ -240,19 +241,15 @@ fun EditIngresoDialog(
         title = { Text("Editar ingreso") },
         text = {
             Column {
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nombre") })
 
+                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("Nombre") })
                 Spacer(Modifier.height(10.dp))
 
                 OutlinedTextField(value = amount, onValueChange = { amount = it }, label = { Text("Monto") })
-
                 Spacer(Modifier.height(10.dp))
 
                 OutlinedTextField(value = date, onValueChange = { date = it }, label = { Text("Fecha") })
-
                 Spacer(Modifier.height(10.dp))
-
-                Text("Tipo de ingreso")
 
             }
         },
@@ -262,7 +259,9 @@ fun EditIngresoDialog(
             }) { Text("Guardar") }
         },
         dismissButton = {
-            TextButton(onClick = onDelete) { Text("Eliminar", color = Color.Red) }
+            TextButton(onClick = onDelete) {
+                Text("Eliminar", color = Color.Red)
+            }
         }
     )
 }

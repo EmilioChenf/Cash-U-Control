@@ -1,46 +1,50 @@
 package com.example.cashucontrol.ui.screens.finances
 
 import androidx.compose.foundation.*
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoneyOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.ui.tooling.preview.Preview
+import com.example.cashucontrol.viewmodel.GastosViewModel
+import com.example.cashucontrol.viewmodel.MonthlyGoalGastosViewModel
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun GastosScreen(
     onBackClick: () -> Unit,
     onAddGastoClick: () -> Unit
 ) {
-    var showDialog by remember { mutableStateOf(false) }
-    var inputValue by remember { mutableStateOf("Q. 2,000.00") }
-    var isPressed by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+    val gastosVM = remember { GastosViewModel() }
+    val goalVM = remember { MonthlyGoalGastosViewModel() }
 
-    val scaleAnim by animateFloatAsState(
-        targetValue = if (isPressed) 0.85f else 1f,
-        animationSpec = tween(durationMillis = 150),
-        label = "ArrowScale"
+    val gastosMes by gastosVM.gastosMes.collectAsState()
+    val goal by goalVM.goal.collectAsState()
+
+    val totalMes = gastosMes.sumOf { it.amount }
+    val meta = goal?.goalAmount ?: 0.0
+    val progreso = if (meta > 0) (totalMes / meta).coerceIn(0.0, 1.0) else 0.0
+
+    var showEditGoal by remember { mutableStateOf(false) }
+    var newGoal by remember { mutableStateOf(meta.toString()) }
+
+    // Obtener mes actual como texto (Enero 2025)
+    val meses = listOf(
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     )
+    val hoy = remember { java.util.Calendar.getInstance() }
+    val mesActual = meses[hoy.get(java.util.Calendar.MONTH)]
+    val añoActual = hoy.get(java.util.Calendar.YEAR)
 
     Column(
         modifier = Modifier
@@ -48,236 +52,259 @@ fun GastosScreen(
             .background(Color.White)
             .verticalScroll(rememberScrollState())
     ) {
-        // 🔴 Encabezado
+
+        // ====================================================
+        // HEADER — Igual que ingresos pero rojo
+        // ====================================================
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFFFF5252), RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
-                .padding(vertical = 25.dp, horizontal = 20.dp)
+                .padding(20.dp)
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                // 🔙 Flecha animada
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "", tint = Color.Black)
+            }
+            Text(
+                "Gastos",
+                modifier = Modifier.align(Alignment.Center),
+                color = Color(0xFF1A237E),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp
+            )
+        }
+
+        Spacer(Modifier.height(20.dp))
+
+        // ====================================================
+        // PANEL DE META — EXACTAMENTE IGUAL A INGRESOS
+        // ====================================================
+        Column(Modifier.padding(horizontal = 25.dp)) {
+
+            // Fecha (Enero 2025)
+            Text(
+                "$mesActual $añoActual",
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Gray,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+
+            Spacer(Modifier.height(6.dp))
+
+            Text(
+                "Presupuesto mensual de gastos",
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A237E),
+                fontSize = 16.sp,
+                modifier = Modifier.align(Alignment.CenterHorizontally)
+            )
+
+            Spacer(Modifier.height(10.dp))
+
+            // Caja tipo "Q. 2500 Cambiar"
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(20.dp))
+                    .background(Color(0xFFEDEDED))
+                    .padding(horizontal = 20.dp, vertical = 16.dp)
+                    .fillMaxWidth()
+            ) {
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp),
-                    horizontalArrangement = Arrangement.Start,
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    val interactionSource = remember { MutableInteractionSource() }
+                    Text(
+                        text = "Q. $meta",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF1A237E)
+                    )
+                    Text(
+                        text = "Cambiar",
+                        color = Color.Gray,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.clickable { showEditGoal = true }
+                    )
+                }
+            }
 
-                    Icon(
-                        Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = Color.Black,
+            Spacer(Modifier.height(20.dp))
+
+            // ====================================================
+            // PANEL DE PROGRESO — MISMO DISEÑO AL 100%
+            // ====================================================
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(Color(0xFFF5F5F5))
+                    .padding(16.dp)
+            ) {
+
+                Column {
+
+                    // Acumulado y Meta
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("Acumulado: Q$totalMes", fontWeight = FontWeight.Bold)
+                        Text("Meta: Q$meta", fontWeight = FontWeight.Bold)
+                    }
+
+                    Spacer(Modifier.height(14.dp))
+
+                    // Barra profesional redondeada como ingresos
+                    Box(
                         modifier = Modifier
-                            .size(32.dp)
-                            .scale(scaleAnim)
-                            .clickable(interactionSource = interactionSource, indication = null) {
-                                isPressed = true
-                                coroutineScope.launch {
-                                    delay(150)
-                                    isPressed = false
-                                    onBackClick()
-                                }
-                            }
+                            .fillMaxWidth()
+                            .height(20.dp)
+                            .clip(RoundedCornerShape(50.dp))
+                            .background(Color(0xFFE0E0E0))
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(progreso.toFloat())
+                                .height(20.dp)
+                                .clip(RoundedCornerShape(50.dp))
+                                .background(Color(0xFFFF5252))
+                        )
+                    }
+
+                    Spacer(Modifier.height(10.dp))
+
+                    // Porcentaje + mensaje
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text("${(progreso * 100).toInt()}%", color = Color.Gray)
+
+                        Text(
+                            if (meta > totalMes)
+                                "Te falta Q${(meta - totalMes)}"
+                            else
+                                "Meta alcanzada 🎉",
+                            color = if (meta > totalMes) Color.Gray else Color(0xFFFF5252),
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(25.dp))
+
+            // ====================================================
+            // LISTA DE GASTOS — IGUAL A INGRESOS PERO ROJO
+            // ====================================================
+            Text("Gastos del mes", fontWeight = FontWeight.Bold, color = Color.Gray)
+            Spacer(Modifier.height(15.dp))
+
+            gastosMes.forEach { gasto ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFFFF5252)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoneyOff,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+
+                        Spacer(Modifier.width(8.dp))
+
+                        Text(
+                            gasto.name,
+                            fontSize = 14.sp,
+                            color = Color.Black,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    Text(
+                        "Q.${gasto.amount}",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
                     )
                 }
 
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(25.dp))
-                        .background(Color.White)
-                        .padding(horizontal = 50.dp, vertical = 10.dp)
-                ) {
-                    Text("Gastos", color = Color(0xFF1A237E), fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                }
+                Spacer(Modifier.height(12.dp))
             }
-        }
 
-        Spacer(modifier = Modifier.height(25.dp))
+            Spacer(Modifier.height(10.dp))
 
-        // 💸 Contenido principal
-        Column(modifier = Modifier.padding(horizontal = 25.dp)) {
-            Text("Presupuesto asignado para gastos", color = Color(0xFF1A237E), fontSize = 14.sp)
-            Spacer(modifier = Modifier.height(10.dp))
-
+            // Total Gastado
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF5F5F5))
-                    .padding(horizontal = 18.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(inputValue, fontWeight = FontWeight.Bold, fontSize = 18.sp, color = Color.Black)
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(10.dp))
-                        .background(Color(0xFFD9D9D9))
-                        .clickable { showDialog = true }
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text("Cambiar", fontSize = 12.sp, color = Color.Gray)
-                }
+                Text("Total gastado", fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text("Q.$totalMes", fontWeight = FontWeight.Bold, color = Color.Black)
             }
 
-            Spacer(modifier = Modifier.height(25.dp))
+            Spacer(Modifier.height(25.dp))
 
-            Text("Añade tus gastos", fontWeight = FontWeight.Bold, color = Color.Gray)
-            Spacer(modifier = Modifier.height(15.dp))
-
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                GastoChip(Icons.Default.School, "Universidad", "Q.1000")
-                GastoChip(Icons.Default.Fastfood, "Comida", "Q.500")
-                GastoChip(Icons.Default.DirectionsBus, "Transporte", "Q.300")
-                GastoChip(Icons.Default.MusicNote, "Spotify", "Q.45")
-            }
-
-            Spacer(modifier = Modifier.height(25.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Column {
-                    Text("Total gastado", fontWeight = FontWeight.Bold, color = Color.Gray)
-                    Text("Restante", fontWeight = FontWeight.Bold, color = Color.Gray)
-                }
-                Column(horizontalAlignment = Alignment.End) {
-                    Text("Q.1845", fontWeight = FontWeight.Bold, color = Color.Black)
-                    Text("Q.155", fontWeight = FontWeight.Bold, color = Color.Black)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(25.dp))
-
-            // 🟥 Botón añadir gasto
+            // ====================================================
+            // BOTÓN AÑADIR GASTO — Igual al de ingresos
+            // ====================================================
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
                     .background(Color(0xFFFF5252))
-                    .clickable { onAddGastoClick() } // ← Navega al formulario rojo
+                    .clickable { onAddGastoClick() }
                     .padding(vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Añadir gasto", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                Text("Añadir gasto", color = Color.White, fontWeight = FontWeight.Bold)
             }
 
-            Spacer(modifier = Modifier.height(25.dp))
+            Spacer(Modifier.height(30.dp))
+        }
+    }
 
-            Text("Límite mensual Q2000.00", fontWeight = FontWeight.Bold, color = Color.Black)
-            Spacer(modifier = Modifier.height(10.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(Color(0xFFF5F5F5))
-                    .padding(10.dp)
-            ) {
-                Column {
-                    LinearProgressIndicator(
-                        progress = 0.85f,
-                        color = Color(0xFFFF5252),
-                        trackColor = Color(0xFFE0E0E0),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(10.dp)
-                            .clip(RoundedCornerShape(10.dp))
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("Usado un 85%", color = Color.Gray, fontSize = 13.sp)
-                        Text("¡Ya casi llegas al límite!", color = Color.Gray, fontSize = 13.sp)
-                    }
+    // ====================================================
+    // DIÁLOGO CAMBIAR META
+    // ====================================================
+    if (showEditGoal) {
+        AlertDialog(
+            onDismissRequest = { showEditGoal = false },
+            title = { Text("Editar meta mensual") },
+            text = {
+                OutlinedTextField(
+                    value = newGoal,
+                    onValueChange = { newGoal = it },
+                    label = { Text("Meta (Q)") }
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val m = newGoal.toDoubleOrNull()
+                    if (m != null) goalVM.saveGoal(m)
+                    showEditGoal = false
+                }) { Text("Guardar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditGoal = false }) {
+                    Text("Cancelar")
                 }
             }
-
-            Spacer(modifier = Modifier.height(25.dp))
-        }
+        )
     }
-
-    // 💬 Diálogo de cambio de presupuesto
-    if (showDialog) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.4f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color.White)
-                    .padding(20.dp)
-                    .width(260.dp)
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.Close,
-                        contentDescription = "Cerrar",
-                        tint = Color.Gray,
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .clickable { showDialog = false }
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = inputValue,
-                        onValueChange = { inputValue = it },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFFFF5252))
-                            .clickable { showDialog = false }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("Guardar cantidad", color = Color.White, fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-        }
-    }
-}
-
-// 🔸 CHIP DE GASTOS
-@Composable
-fun GastoChip(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, amount: String) {
-    Row(
-        modifier = Modifier
-            .clip(RoundedCornerShape(25.dp))
-            .background(Color(0xFFFFEBEE))
-            .padding(horizontal = 10.dp, vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(28.dp)
-                .clip(CircleShape)
-                .background(Color(0xFFFF5252)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(icon, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-        }
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(title, fontSize = 13.sp, color = Color.Black, fontWeight = FontWeight.Medium)
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(amount, color = Color.Gray, fontSize = 12.sp)
-    }
-}
-@Preview(showBackground = true)
-@Composable
-fun PreviewGastosScreen() {
-    GastosScreen(
-        onBackClick = {},
-        onAddGastoClick = {}
-    )
 }

@@ -201,19 +201,73 @@ fun IngresosScreen(
             // ======================
             //   LISTA DE INGRESOS DEL MES
             // ======================
-            Text("Ingresos del mes", fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(10.dp))
+            // ---------------------------
+// 🔹 LISTA DE INGRESOS TIPO DISEÑO PROFESIONAL
+// ---------------------------
+            Text("Añade tus ingresos", fontWeight = FontWeight.Bold, color = Color.Gray)
+            Spacer(Modifier.height(15.dp))
 
             ingresosMes.forEach { ingreso ->
-                IngresoChip(
-                    icon = Icons.Default.Money,
-                    title = ingreso.name,
-                    amount = "Q${ingreso.amount}"
-                )
-                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+
+                    // 🔵 IZQUIERDA (Icono + nombre)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF00C853)),   // VERDE
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.AttachMoney,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+
+                        Spacer(Modifier.width(8.dp))
+
+                        Text(
+                            ingreso.name,
+                            fontSize = 14.sp,
+                            color = Color.Black,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
+
+                    // 🔵 DERECHA (Monto)
+                    Text(
+                        "Q.${ingreso.amount}",
+                        fontSize = 14.sp,
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+
+                Spacer(Modifier.height(12.dp))
             }
 
+// ---------------------------
+// 🔹 TOTAL ACUMULADO
+// ---------------------------
+            Spacer(Modifier.height(10.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Total acumulado", fontWeight = FontWeight.Bold, color = Color.Gray)
+                Text("Q.$totalMes", fontWeight = FontWeight.Bold, color = Color.Black)
+            }
             Spacer(Modifier.height(25.dp))
+
 
             // ======================
             //   BOTÓN AÑADIR INGRESO
