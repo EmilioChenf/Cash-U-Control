@@ -1,5 +1,6 @@
 package com.example.cashucontrol.ui.screens.finances
 
+import android.app.DatePickerDialog
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -17,262 +18,255 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import com.example.cashucontrol.viewmodel.AhorrosViewModel
+import com.example.cashucontrol.models.Ahorro
+import java.util.*
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AhorroScreen(
     onBackClick: () -> Unit,
-    onAddObjetivoClick: (String) -> Unit  // ✔ Esto está correcto
+    onAddObjetivoClick: (String) -> Unit
 ) {
-    var metaTab by remember { mutableStateOf("Mediano plazo") }
-    var isPressed by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
+    val vm = remember { AhorrosViewModel() }
+    val ahorros by vm.ahorros.collectAsState()
 
-    val scaleAnim by animateFloatAsState(
-        targetValue = if (isPressed) 0.85f else 1f,
-        animationSpec = tween(durationMillis = 150),
-        label = "ArrowScale"
-    )
+    var metaTab by remember { mutableStateOf("Mediano plazo") }
+    var showAporteDialog by remember { mutableStateOf<Ahorro?>(null) }
 
     Column(
-        modifier = Modifier
+        Modifier
             .fillMaxSize()
-            .background(Color.White)
             .verticalScroll(rememberScrollState())
+            .background(Color.White)
     ) {
-        // 🟡 Encabezado amarillo
+
+        // HEADER ============================================
         Box(
-            modifier = Modifier
+            Modifier
                 .fillMaxWidth()
                 .background(Color(0xFFFFEB3B), RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
-                .padding(vertical = 25.dp, horizontal = 20.dp)
+                .padding(20.dp)
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 10.dp),
-                    horizontalArrangement = Arrangement.Start,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val interactionSource = remember { MutableInteractionSource() }
 
-                    Icon(
-                        Icons.Default.ArrowBack,
-                        contentDescription = "Volver",
-                        tint = Color.Black,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .scale(scaleAnim)
-                            .clickable(interactionSource = interactionSource, indication = null) {
-                                isPressed = true
-                                coroutineScope.launch {
-                                    delay(150)
-                                    isPressed = false
-                                    onBackClick()
-                                }
-                            }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(14.dp))
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(25.dp))
-                        .background(Color.White)
-                        .padding(horizontal = 50.dp, vertical = 10.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Ahorro", color = Color(0xFF1A237E), fontWeight = FontWeight.Bold, fontSize = 18.sp)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Icon(Icons.Default.Savings, contentDescription = null, tint = Color(0xFF1A237E))
-                    }
-                }
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.Default.ArrowBack, "", tint = Color.Black)
             }
+
+            Text(
+                "Ahorro",
+                Modifier.align(Alignment.Center),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                color = Color(0xFF1A237E)
+            )
         }
 
-        Spacer(modifier = Modifier.height(25.dp))
+        Spacer(Modifier.height(25.dp))
 
-        // 📊 Contenido principal
-        Column(modifier = Modifier.padding(horizontal = 25.dp)) {
-            Text("Metas", fontWeight = FontWeight.Bold, color = Color(0xFF1A237E))
-            Spacer(modifier = Modifier.height(10.dp))
+        Column(Modifier.padding(horizontal = 25.dp)) {
 
-            // Tabs metas
+            // TABS ============================================
             Row(
-                modifier = Modifier
+                Modifier
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(15.dp))
                     .background(Color(0xFFE0E0E0))
                     .padding(4.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                MetaTabButton("Corto plazo", metaTab == "Corto plazo", Color(0xFFFFEB3B)) { metaTab = "Corto plazo" }
-                MetaTabButton("Mediano plazo", metaTab == "Mediano plazo", Color(0xFFFFEB3B)) { metaTab = "Mediano plazo" }
-                MetaTabButton("Largo plazo", metaTab == "Largo plazo", Color(0xFFFFEB3B)) { metaTab = "Largo plazo" }
-            }
-
-            Spacer(modifier = Modifier.height(25.dp))
-
-            AnimatedContent(
-                targetState = metaTab,
-                transitionSpec = {
-                    slideInVertically(initialOffsetY = { fullHeight -> if (targetState == "Largo plazo") fullHeight else -fullHeight }) +
-                            fadeIn(animationSpec = tween(500)) togetherWith
-                            slideOutVertically(targetOffsetY = { fullHeight -> if (targetState == "Largo plazo") -fullHeight else fullHeight }) +
-                            fadeOut(animationSpec = tween(500))
-                }, label = ""
-            ) { tab ->
-                when (tab) {
-                    "Corto plazo" -> MetaSection("Corto plazo", "Nuevo teclado → Q.500", "Q200.00 / 500.00", 0.4f, "40%") {
-                        onAddObjetivoClick("Corto plazo")
-                    }
-                    "Mediano plazo" -> MetaSection("Mediano plazo", "Teléfono nuevo → Q.800", "Q300.00 / 800.00", 0.37f, "37%") {
-                        onAddObjetivoClick("Mediano plazo")
-                    }
-                    "Largo plazo" -> MetaSection("Largo plazo", "Computadora nueva → Q.8000", "Q3000.00 / 8000.00", 0.25f, "25%") {
-                        onAddObjetivoClick("Largo plazo")
+                listOf("Corto plazo", "Mediano plazo", "Largo plazo").forEach { tab ->
+                    Box(
+                        Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(if (metaTab == tab) Color(0xFFFFEB3B) else Color.Transparent)
+                            .clickable { metaTab = tab }
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            tab,
+                            fontWeight = FontWeight.Bold,
+                            color = if (metaTab == tab) Color.Black else Color.Gray
+                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(25.dp))
+            Spacer(Modifier.height(25.dp))
+
+            val metasFiltradas = ahorros.filter { it.plazo == metaTab }
+
+            Text("Objetivos de $metaTab", fontWeight = FontWeight.Bold)
+
+            Spacer(Modifier.height(15.dp))
+
+            metasFiltradas.forEach { objetivo ->
+                AhorroCard(
+                    ahorro = objetivo,
+                    onAporteClick = { showAporteDialog = objetivo }
+                )
+                Spacer(Modifier.height(20.dp))
+            }
+
+            // BOTÓN NUEVO OBJETIVO =======================
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(Color(0xFFFFEB3B))
+                    .clickable { onAddObjetivoClick(metaTab) }
+                    .padding(vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("Añadir nuevo objetivo", fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(Modifier.height(50.dp))
         }
     }
-}
 
-@Composable
-fun MetaTabButton(text: String, active: Boolean, color: Color, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (active) color else Color(0xFFE0E0E0))
-            .clickable { onClick() }
-            .padding(horizontal = 16.dp, vertical = 6.dp)
-    ) {
-        Text(
-            text,
-            color = if (active) Color.Black else Color.Gray,
-            fontWeight = FontWeight.Bold,
-            fontSize = 13.sp
+    if (showAporteDialog != null) {
+        DialogAgregarAporte(
+            ahorro = showAporteDialog!!,
+            onDismiss = { showAporteDialog = null },
+            onSave = { amount, date ->
+                vm.addAporte(showAporteDialog!!.id, amount, date)
+                showAporteDialog = null
+            }
         )
     }
 }
 
 @Composable
-fun MetaSection(
-    title: String,
-    objetivo: String,
-    metaTexto: String,
-    progreso: Float,
-    porcentaje: String,
-    onAddObjetivoClick: () -> Unit
-) {
-    Text("Objetivos", fontWeight = FontWeight.Bold, color = Color(0xFF1A237E))
-    Spacer(modifier = Modifier.height(10.dp))
+fun AhorroCard(ahorro: Ahorro, onAporteClick: () -> Unit) {
+
+    val progreso = (ahorro.totalSaved / ahorro.goalAmount)
+        .coerceIn(0.0, 1.0)
 
     Box(
-        modifier = Modifier
+        Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(Color(0xFFFFEBEE))
-            .padding(horizontal = 12.dp, vertical = 10.dp)
+            .clip(RoundedCornerShape(20.dp))
+            .background(Color(0xFFFFFDE7))
+            .padding(16.dp)
+            .border(1.dp, Color(0xFFE6E6E6), RoundedCornerShape(20.dp))
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.Lock, contentDescription = null, tint = Color.Black, modifier = Modifier.size(16.dp))
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(objetivo, color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-        }
-    }
 
-    Spacer(modifier = Modifier.height(15.dp))
+        Column {
 
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(Color.White)
-            .padding(12.dp)
-            .border(1.dp, Color(0xFFDDDDDD), RoundedCornerShape(10.dp))
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            // 🔴 Botón que abre la nueva pantalla
+            Text(ahorro.name, fontWeight = FontWeight.Bold, fontSize = 16.sp)
+            Text("Meta: Q${ahorro.goalAmount}", color = Color.Gray)
+            if (ahorro.deadline.isNotBlank())
+                Text("Límite: ${ahorro.deadline}", color = Color.Gray)
+
+            Spacer(Modifier.height(12.dp))
+
+            // BOTÓN APORTAR
             Box(
-                modifier = Modifier
+                Modifier
+                    .fillMaxWidth()
                     .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFFF5252))
-                    .clickable { onAddObjetivoClick() }
-                    .padding(vertical = 10.dp)
-                    .fillMaxWidth(),
+                    .background(Color(0xFFFFEB3B))
+                    .clickable { onAporteClick() }
+                    .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Añadir objetivos", color = Color.White, fontWeight = FontWeight.Bold)
+                Text("+ Agregar ahorro", fontWeight = FontWeight.Bold)
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(Modifier.height(15.dp))
 
-            Text("Total", fontWeight = FontWeight.Bold, color = Color.Gray)
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Row(
-                modifier = Modifier
+            // PROGRESS BAR
+            Box(
+                Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFF5F5F5))
-                    .padding(horizontal = 15.dp, vertical = 10.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                    .height(18.dp)
+                    .clip(RoundedCornerShape(50.dp))
+                    .background(Color(0xFFE0E0E0))
             ) {
-                Text("Añadir cantidad", color = Color(0xFF1A237E), fontWeight = FontWeight.Bold)
                 Box(
-                    modifier = Modifier
-                        .size(25.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFDDDDDD)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("+", fontWeight = FontWeight.Bold, color = Color.Black)
-                }
+                    Modifier
+                        .fillMaxWidth(progreso.toFloat())
+                        .height(18.dp)
+                        .clip(RoundedCornerShape(50.dp))
+                        .background(Color(0xFF00C853))
+                )
             }
 
-            Spacer(modifier = Modifier.height(15.dp))
+            Spacer(Modifier.height(8.dp))
 
-            LinearProgressIndicator(
-                progress = progreso,
-                color = Color(0xFF00C853),
-                trackColor = Color(0xFFE0E0E0),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(10.dp)
-                    .clip(RoundedCornerShape(10.dp))
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text(metaTexto, color = Color.Black, fontWeight = FontWeight.Medium)
-                Text(porcentaje, color = Color.Black, fontWeight = FontWeight.Bold)
-            }
-
-            Spacer(modifier = Modifier.height(15.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFF5F5F5))
-                    .padding(horizontal = 15.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text("Total", color = Color.Gray, fontWeight = FontWeight.Bold)
-                Text("Q300.00", color = Color.Black, fontWeight = FontWeight.Bold)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text("Ahorrado: Q${ahorro.totalSaved}", fontWeight = FontWeight.Bold)
+                Text("${(progreso * 100).toInt()}%", fontWeight = FontWeight.Bold)
             }
         }
     }
+}
+
+@Composable
+fun DialogAgregarAporte(
+    ahorro: Ahorro,
+    onDismiss: () -> Unit,
+    onSave: (Double, String) -> Unit
+) {
+
+    var cantidad by remember { mutableStateOf("") }
+    var fecha by remember { mutableStateOf("") }
+
+    val ctx = LocalContext.current
+
+    fun openCalendar() {
+        val c = Calendar.getInstance()
+        DatePickerDialog(
+            ctx,
+            { _, y, m, d -> fecha = "$d/${m + 1}/$y" },
+            c.get(Calendar.YEAR),
+            c.get(Calendar.MONTH),
+            c.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Agregar ahorro") },
+        text = {
+            Column {
+
+                OutlinedTextField(
+                    value = cantidad,
+                    onValueChange = { cantidad = it },
+                    label = { Text("Cantidad (Q)") }
+                )
+
+                Spacer(Modifier.height(10.dp))
+
+                OutlinedTextField(
+                    value = fecha,
+                    onValueChange = { fecha = it },
+                    label = { Text("Fecha") },
+                    trailingIcon = {
+                        IconButton(onClick = { openCalendar() }) {
+                            Icon(Icons.Default.CalendarMonth, "")
+                        }
+                    }
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onSave(cantidad.toDouble(), fecha)
+            }) {
+                Text("Guardar")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancelar")
+            }
+        }
+    )
 }

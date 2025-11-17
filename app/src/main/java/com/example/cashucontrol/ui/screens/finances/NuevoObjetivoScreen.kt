@@ -1,122 +1,224 @@
 package com.example.cashucontrol.ui.screens.finances
 
+import android.app.DatePickerDialog
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Savings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cashucontrol.models.Ahorro
+import com.example.cashucontrol.viewmodel.AhorrosViewModel
+import java.util.*
 
 @Composable
 fun NuevoObjetivoScreen(selectedPlazo: String, onBackClick: () -> Unit) {
+
+    val vm = remember { AhorrosViewModel() }
+    val ahorrosList by vm.ahorros.collectAsState()
+
+    var name by remember { mutableStateOf(TextFieldValue("")) }
+    var goalAmount by remember { mutableStateOf(TextFieldValue("")) }
     var plazo by remember { mutableStateOf(selectedPlazo) }
+    var deadline by remember { mutableStateOf(TextFieldValue("")) }
+
+    var editing by remember { mutableStateOf<Ahorro?>(null) }
+
+    val ctx = LocalContext.current
+
+    // 📅 Calendario
+    fun openCalendar() {
+        val cal = Calendar.getInstance()
+        DatePickerDialog(
+            ctx,
+            { _, y, m, d -> deadline = TextFieldValue("$d/${m + 1}/$y") },
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH),
+            cal.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
             .verticalScroll(rememberScrollState())
+            .background(Color.White)
     ) {
-        // 🟡 Encabezado amarillo
+
+        // =======================
+        // 🟡 HEADER
+        // =======================
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(Color(0xFFFFEB3B), RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
-                .padding(vertical = 25.dp, horizontal = 20.dp)
+                .padding(20.dp)
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                IconButton(onClick = { onBackClick() }, modifier = Modifier.align(Alignment.Start)) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.Black)
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(25.dp))
-                        .background(Color.White)
-                        .padding(horizontal = 40.dp, vertical = 10.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Nuevo objetivo de ahorro", color = Color(0xFF1A237E), fontWeight = FontWeight.Bold)
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Icon(Icons.Default.Savings, contentDescription = null, tint = Color(0xFF1A237E))
-                    }
-                }
+            IconButton(onClick = onBackClick) {
+                Icon(Icons.Default.ArrowBack, contentDescription = "", tint = Color.Black)
             }
+            Text(
+                text = if (editing == null) "Nuevo objetivo" else "Editar objetivo",
+                modifier = Modifier.align(Alignment.Center),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1A237E)
+            )
         }
 
-        Spacer(modifier = Modifier.height(25.dp))
+        Spacer(Modifier.height(20.dp))
 
-        Column(modifier = Modifier.padding(horizontal = 25.dp)) {
-            Text("Nombre del objetivo", fontWeight = FontWeight.Bold, color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(value = "", onValueChange = {}, placeholder = { Text("Escribe aquí") }, modifier = Modifier.fillMaxWidth())
+        Column(Modifier.padding(horizontal = 25.dp)) {
 
-            Spacer(modifier = Modifier.height(15.dp))
-            Text("Monto de meta", fontWeight = FontWeight.Bold, color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(value = "Q.0.00", onValueChange = {}, modifier = Modifier.fillMaxWidth())
+            // =======================
+            // 📝 FORMULARIO
+            // =======================
 
-            Spacer(modifier = Modifier.height(15.dp))
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Nombre del objetivo") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(12.dp))
+
+            OutlinedTextField(
+                value = goalAmount,
+                onValueChange = { goalAmount = it },
+                label = { Text("Monto meta (Q)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(Modifier.height(12.dp))
+
             Text("Plazo", fontWeight = FontWeight.Bold, color = Color.Gray)
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(8.dp))
 
             Row(
-                modifier = Modifier
+                Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(15.dp))
+                    .clip(RoundedCornerShape(12.dp))
                     .background(Color(0xFFE0E0E0))
-                    .padding(4.dp),
+                    .padding(6.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
                 listOf("Corto plazo", "Mediano plazo", "Largo plazo").forEach {
                     Box(
-                        modifier = Modifier
+                        Modifier
                             .clip(RoundedCornerShape(10.dp))
-                            .background(if (plazo == it) Color(0xFFFFEB3B) else Color(0xFFE0E0E0))
+                            .background(if (plazo == it) Color(0xFFFFEB3B) else Color.Transparent)
                             .clickable { plazo = it }
-                            .padding(horizontal = 16.dp, vertical = 6.dp)
+                            .padding(horizontal = 12.dp, vertical = 6.dp)
                     ) {
-                        Text(it, color = if (plazo == it) Color.Black else Color.Gray, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                        Text(it, fontWeight = FontWeight.Bold, color = Color.Black)
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(15.dp))
-            Text("Fecha límite (Opcional)", fontWeight = FontWeight.Bold, color = Color.Gray.copy(alpha = 0.8f))
-            Spacer(modifier = Modifier.height(8.dp))
-            OutlinedTextField(value = "", onValueChange = {}, placeholder = { Text("Día/mes/año") }, modifier = Modifier.fillMaxWidth())
+            Spacer(Modifier.height(12.dp))
 
-            Spacer(modifier = Modifier.height(20.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(Color(0xFFFFEB3B))
-                    .clickable { /* Guardar objetivo */ }
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
+            OutlinedTextField(
+                value = deadline,
+                onValueChange = { deadline = it },
+                label = { Text("Fecha límite (Opcional)") },
+                trailingIcon = {
+                    IconButton(onClick = { openCalendar() }) {
+                        Icon(Icons.Default.CalendarMonth, contentDescription = "")
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+            )
+
+            Spacer(Modifier.height(20.dp))
+
+            // =======================
+            // 🟡 BOTÓN GUARDAR
+            // =======================
+            Button(
+                onClick = {
+                    if (name.text.isBlank() || goalAmount.text.isBlank()) return@Button
+
+                    if (editing == null) {
+                        vm.saveAhorro(name.text, goalAmount.text.toDouble(), plazo, deadline.text)
+                    } else {
+                        vm.updateAhorro(editing!!.id, name.text, goalAmount.text.toDouble(), plazo, deadline.text)
+                        editing = null
+                    }
+
+                    name = TextFieldValue("")
+                    goalAmount = TextFieldValue("")
+                    deadline = TextFieldValue("")
+                },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(Color(0xFFFFEB3B))
             ) {
-                Text("Guardar objetivo", color = Color.Black, fontWeight = FontWeight.Bold)
+                Text(if (editing == null) "Guardar objetivo" else "Actualizar objetivo", color = Color.Black)
+            }
+
+            Spacer(Modifier.height(30.dp))
+
+            // =======================
+            // 📋 LISTA DE OBJETIVOS
+            // =======================
+            Text("Mis objetivos de ahorro", fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(10.dp))
+
+            ahorrosList.forEach { ahorro ->
+                ObjetivoRow(
+                    ahorro = ahorro,
+                    onEdit = {
+                        editing = ahorro
+                        name = TextFieldValue(ahorro.name)
+                        goalAmount = TextFieldValue(ahorro.goalAmount.toString())
+                        plazo = ahorro.plazo
+                        deadline = TextFieldValue(ahorro.deadline)
+                    },
+                    onDelete = {
+                        vm.deleteAhorro(ahorro.id)
+                    }
+                )
+                Spacer(Modifier.height(10.dp))
             }
         }
     }
 }
-@Preview(showBackground = true)
-@Composable
-fun PreviewNuevoObjetivoScreen() {
-    NuevoObjetivoScreen(
-        selectedPlazo = "Mediano plazo",
-        onBackClick = {}
-    )
-}
 
+@Composable
+fun ObjetivoRow(ahorro: Ahorro, onEdit: () -> Unit, onDelete: () -> Unit) {
+
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color(0xFFFFF9C4))
+            .padding(12.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        Column(Modifier.weight(1f)) {
+            Text(ahorro.name, fontWeight = FontWeight.Bold)
+            Text("Meta: Q${ahorro.goalAmount}", fontSize = 12.sp, color = Color.Gray)
+            if (ahorro.deadline.isNotBlank())
+                Text("Fecha límite: ${ahorro.deadline}", fontSize = 12.sp, color = Color.Gray)
+            Text("Plazo: ${ahorro.plazo}", fontSize = 12.sp, color = Color.Gray)
+        }
+
+        IconButton(onClick = onEdit) {
+            Icon(Icons.Default.Edit, "", tint = Color.Black)
+        }
+        IconButton(onClick = onDelete) {
+            Icon(Icons.Default.Delete, "", tint = Color.Red)
+        }
+    }
+}
