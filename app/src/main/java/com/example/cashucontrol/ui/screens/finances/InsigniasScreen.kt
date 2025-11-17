@@ -16,16 +16,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.cashucontrol.viewmodel.InsigniasViewModel
+import com.example.cashucontrol.models.Insignia
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InsigniasScreen(onBackClick: () -> Unit) {
-    var insigniaSeleccionada by remember { mutableStateOf<String?>(null) }
-    var completada by remember { mutableStateOf(false) }
+
+    // 🔵 ViewModel seguro
+    val insigniasVM: InsigniasViewModel = viewModel()
+    val insignias by insigniasVM.insignias.collectAsState()
+
+    var insigniaSeleccionada by remember { mutableStateOf<Insignia?>(null) }
 
     Column(
         modifier = Modifier
@@ -33,17 +39,24 @@ fun InsigniasScreen(onBackClick: () -> Unit) {
             .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 🔵 Encabezado
+
+        // 🔵 ENCABEZADO
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFF001F6B), RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp))
-                .padding(vertical = 40.dp),
-            contentAlignment = Alignment.TopStart
+                .background(
+                    Color(0xFF001F6B),
+                    RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp)
+                )
+                .padding(vertical = 40.dp)
         ) {
-            IconButton(onClick = { onBackClick() }, modifier = Modifier.padding(start = 10.dp, top = 10.dp)) {
+            IconButton(
+                onClick = { onBackClick() },
+                modifier = Modifier.padding(start = 10.dp, top = 10.dp)
+            ) {
                 Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
             }
+
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -55,90 +68,107 @@ fun InsigniasScreen(onBackClick: () -> Unit) {
                     modifier = Modifier.size(90.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Ana Sofía", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                Text(
+                    "Mis insignias",
+                    color = Color.White,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
+                )
             }
         }
 
         Spacer(modifier = Modifier.height(20.dp))
-        Text("Mis insignias", fontWeight = FontWeight.Bold, color = Color.Black, fontSize = 18.sp)
 
-        Spacer(modifier = Modifier.height(15.dp))
+        // TÍTULO
+        Text(
+            "Insignias obtenidas y por desbloquear",
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+            fontSize = 16.sp
+        )
 
-        // 🔹 Grid de insignias
+        Spacer(modifier = Modifier.height(20.dp))
+
+        // 🔹 GRID DINÁMICO — 2 POR FILA
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp)) {
-                InsigniaItem("Nivel 1", true) {
-                    insigniaSeleccionada = "Nivel 1"
-                    completada = true
+
+            val rows = insignias.chunked(2)
+
+            rows.forEach { fila ->
+
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 40.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    fila.forEach { ins ->
+                        InsigniaItem(
+                            insignia = ins,
+                            onClick = { insigniaSeleccionada = ins }
+                        )
+                    }
                 }
-                InsigniaItem("Nivel 2", true) {
-                    insigniaSeleccionada = "Nivel 2"
-                    completada = true
-                }
-            }
-            Spacer(modifier = Modifier.height(15.dp))
-            Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp)) {
-                InsigniaItem("Nivel 3", false) {
-                    insigniaSeleccionada = "Nivel 3"
-                    completada = false
-                }
-                InsigniaItem("Nivel 4", false) {
-                    insigniaSeleccionada = "Nivel 4"
-                    completada = false
-                }
-            }
-            Spacer(modifier = Modifier.height(15.dp))
-            Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth().padding(horizontal = 40.dp)) {
-                InsigniaItem("Nivel 5", false) {
-                    insigniaSeleccionada = "Nivel 5"
-                    completada = false
-                }
-                InsigniaItem("Nivel 6", false) {
-                    insigniaSeleccionada = "Nivel 6"
-                    completada = false
-                }
+
+                Spacer(modifier = Modifier.height(25.dp))
             }
         }
     }
 
-    // 🟢 Dialogo de insignia seleccionada
+    // ======================================
+    // 🟢 DIÁLOGO — DETALLES DE INSIGNIA
+    // ======================================
     if (insigniaSeleccionada != null) {
+
+        val ins = insigniaSeleccionada!!
+
         Dialog(onDismissRequest = { insigniaSeleccionada = null }) {
+
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.85f)
+                    .fillMaxWidth(0.90f)
                     .clip(RoundedCornerShape(20.dp))
                     .background(Color.White)
-                    .padding(20.dp),
-                contentAlignment = Alignment.Center
+                    .padding(20.dp)
             ) {
+
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // Icono
+
+                    // ICONO
                     Box(
                         modifier = Modifier
-                            .size(70.dp)
+                            .size(80.dp)
                             .clip(CircleShape)
-                            .background(if (completada) Color(0xFFE0F7FA) else Color(0xFFE0E0E0)),
+                            .background(
+                                if (ins.completed) Color(0xFFE0F7FA)
+                                else Color(0xFFE0E0E0)
+                            ),
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            if (completada) "🏅" else "🔒",
-                            fontSize = 32.sp
+                            if (ins.completed) "🏅" else "🔒",
+                            fontSize = 36.sp
                         )
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text(insigniaSeleccionada ?: "", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+
+                    // NOMBRE
+                    Text(
+                        ins.name,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Barra de progreso
+                    // PROGRESO
                     LinearProgressIndicator(
-                        progress = if (completada) 1f else 0.5f,
-                        color = if (completada) Color(0xFF00C853) else Color.Gray,
+                        progress = ins.progress.toFloat(),
+                        color = if (ins.completed) Color(0xFF00C853) else Color.Gray,
                         trackColor = Color(0xFFE0E0E0),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -147,43 +177,37 @@ fun InsigniasScreen(onBackClick: () -> Unit) {
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
+
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+                        Text("${(ins.progress * 100).toInt()}%", color = Color.Gray)
                         Text(
-                            if (completada) "100%" else "50%",
-                            color = Color.Gray,
-                            fontSize = 13.sp
-                        )
-                        Text(
-                            if (completada) "Completado" else "Bloqueado",
-                            color = if (completada) Color(0xFF00C853) else Color.Gray,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp
+                            if (ins.completed) "Completado" else "Bloqueado",
+                            color = if (ins.completed) Color(0xFF00C853) else Color.Gray,
+                            fontWeight = FontWeight.Bold
                         )
                     }
 
                     Spacer(modifier = Modifier.height(15.dp))
 
-                    // Descripción
+                    // DESCRIPCIÓN
                     Text(
-                        text = if (completada)
-                            "Has registrado tus gastos e ingresos durante 7 días seguidos.\n¡Gran disciplina, sigue construyendo tu hábito financiero!"
-                        else
-                            "Racha de 30 días de registro de ingresos y gastos",
+                        text = ins.description,
                         textAlign = TextAlign.Center,
                         fontSize = 14.sp,
-                        color = Color.Black
+                        color = Color.DarkGray
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
+
+                    // BOTÓN CERRAR
                     Button(
                         onClick = { insigniaSeleccionada = null },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(45.dp)
-                            .clip(RoundedCornerShape(10.dp)),
+                            .height(45.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFE0E0E0))
                     ) {
                         Text("Cerrar", color = Color.Black, fontWeight = FontWeight.Bold)
@@ -194,31 +218,59 @@ fun InsigniasScreen(onBackClick: () -> Unit) {
     }
 }
 
-@Composable
-fun InsigniaItem(texto: String, completado: Boolean, onClick: () -> Unit) {
-    val fondo = if (completado) Color(0xFFE0F7FA) else Color(0xFFE0E0E0)
-    val textoColor = if (completado) Color.Black else Color.Gray
 
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+// =========================================================
+// 🔵 COMPONENTE — ITEM DE INSIGNIA
+// =========================================================
+// =========================================================
+// 🔵 COMPONENTE — ITEM DE INSIGNIA (con descripción visible)
+// =========================================================
+@Composable
+fun InsigniaItem(insignia: Insignia, onClick: () -> Unit) {
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier.width(130.dp)
+    ) {
+
+        // ICONO
         Box(
             modifier = Modifier
-                .size(80.dp)
+                .size(90.dp)
                 .clip(CircleShape)
-                .background(fondo)
+                .background(
+                    if (insignia.completed) Color(0xFFE0F7FA)
+                    else Color(0xFFE0E0E0)
+                )
                 .clickable { onClick() },
             contentAlignment = Alignment.Center
         ) {
-            Text(if (completado) "🏅" else "🔒", fontSize = 30.sp)
+            Text(
+                if (insignia.completed) "🏅" else "🔒",
+                fontSize = 36.sp
+            )
         }
+
         Spacer(modifier = Modifier.height(6.dp))
-        Text(texto, fontSize = 14.sp, color = textoColor, fontWeight = FontWeight.Medium)
+
+        // NOMBRE
+        Text(
+            insignia.name,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (insignia.completed) Color.Black else Color.Gray,
+            textAlign = TextAlign.Center
+        )
+
+        Spacer(modifier = Modifier.height(4.dp))
+
+        // DESCRIPCIÓN
+        Text(
+            insignia.description,
+            fontSize = 12.sp,
+            color = Color.Gray,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 4.dp)
+        )
     }
 }
-@Preview(showBackground = true)
-@Composable
-fun PreviewInsigniasScreen() {
-    InsigniasScreen(
-        onBackClick = {}
-    )
-}
-
