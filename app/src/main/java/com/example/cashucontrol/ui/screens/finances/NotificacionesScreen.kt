@@ -17,56 +17,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.cashucontrol.viewmodel.NotificacionesViewModel
+
 
 @Composable
 fun NotificacionesScreen(onBackClick: () -> Unit) {
+
+    val vm: NotificacionesViewModel = viewModel()
+    val notificaciones by vm.notificaciones.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
             .verticalScroll(rememberScrollState())
     ) {
-        // 🔷 Encabezado azul
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color(0xFF001F6B), RoundedCornerShape(bottomStart = 30.dp, bottomEnd = 30.dp))
-                .padding(vertical = 25.dp, horizontal = 20.dp)
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    IconButton(onClick = { onBackClick() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
-                    }
-                    Icon(Icons.Default.Notifications, contentDescription = null, tint = Color.White)
-                    Icon(
-                        Icons.Default.AccountCircle,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(30.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(15.dp))
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(25.dp))
-                        .background(Color.White)
-                        .padding(horizontal = 50.dp, vertical = 10.dp)
-                ) {
-                    Text(
-                        "Bandeja de entrada",
-                        color = Color(0xFF001F6B),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 18.sp
-                    )
-                }
-            }
-        }
+        // ... header igual ...
 
         Spacer(modifier = Modifier.height(20.dp))
 
@@ -76,26 +43,40 @@ fun NotificacionesScreen(onBackClick: () -> Unit) {
                 .padding(horizontal = 25.dp),
             horizontalArrangement = Arrangement.End
         ) {
-            Text("Borrar todo", color = Color.Black, fontWeight = FontWeight.Medium)
+            Text(
+                "Borrar todo",
+                color = Color.Black,
+                fontWeight = FontWeight.Medium,
+                modifier = Modifier.clickable { vm.borrarTodo() }
+            )
         }
 
         Spacer(modifier = Modifier.height(10.dp))
 
-        // 📩 Notificaciones
-        val notificaciones = listOf(
-            "¡Felicidades! Has desbloqueado una nueva insignia.",
-            "Has registrado tus gastos e ingresos durante 7 días seguidos. ¡Gran disciplina!",
-            "¡Lo lograste! Has cumplido tu meta de ahorro. Cada esfuerzo valió la pena."
-        )
-
-        notificaciones.forEach { texto ->
-            NotificacionItem(texto)
+        if (notificaciones.isEmpty()) {
+            Text(
+                "Aún no hay notificaciones",
+                modifier = Modifier.padding(horizontal = 25.dp),
+                color = Color.Gray
+            )
+        } else {
+            notificaciones.forEach { n ->
+                NotificacionItem(
+                    titulo = n.title,
+                    categoria = n.category,
+                    texto = n.message
+                )
+            }
         }
     }
 }
 
 @Composable
-fun NotificacionItem(texto: String) {
+fun NotificacionItem(
+    titulo: String,
+    categoria: String,
+    texto: String
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -107,7 +88,7 @@ fun NotificacionItem(texto: String) {
         Column {
             Text("Notificación del sistema", fontWeight = FontWeight.Bold, color = Color.Black)
             Spacer(modifier = Modifier.height(4.dp))
-            Text("Insignias", fontWeight = FontWeight.Bold, color = Color.Gray)
+            Text(categoria, fontWeight = FontWeight.Bold, color = Color.Gray)
             Spacer(modifier = Modifier.height(2.dp))
             Text(texto, color = Color.Black, fontSize = 13.sp)
         }

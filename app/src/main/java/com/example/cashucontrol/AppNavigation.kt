@@ -122,7 +122,7 @@ fun AppNavigation(
         }
 
         composable<Insignias> {
-            InsigniasScreen(onBackClick = { navController.popBackStack() })
+            AchievementsScreen(onBackClick = { navController.popBackStack() })
         }
 
         composable<CentroAyuda> {

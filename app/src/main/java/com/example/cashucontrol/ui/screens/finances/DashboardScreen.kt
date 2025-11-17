@@ -28,6 +28,12 @@ import com.example.cashucontrol.viewmodel.MonthlyGoalViewModel
 import com.example.cashucontrol.viewmodel.MonthlyGoalGastosViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import kotlin.math.max
+import androidx.compose.ui.platform.LocalContext
+import com.example.cashucontrol.notifications.scheduleDailyNotification
+import java.util.Calendar
+import kotlin.math.max
+
 
 // =======================================================================
 //                          DASHBOARD COMPLETO
@@ -45,7 +51,7 @@ fun DashboardScreen(
     onHelpCenter: () -> Unit,
     onLogout: () -> Unit
 ) {
-
+    val context = LocalContext.current
     // ===================  VIEWMODELS  =====================
     val ingresosVM = remember { IngresosViewModel() }
     val gastosVM = remember { GastosViewModel() }
@@ -78,7 +84,7 @@ fun DashboardScreen(
     var showContent by remember { mutableStateOf(false) }
     var showProfileMenu by remember { mutableStateOf(false) }
     var showAllMovimientos by remember { mutableStateOf(false) }
-
+    var showChart by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) { showContent = true }
 
     Box(
@@ -165,13 +171,31 @@ fun DashboardScreen(
                 // ================= MOVIMIENTOS =================
                 Row(
                     Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Movimientos", fontWeight = FontWeight.Bold)
-                    Text("Ver todo",
+                    Text(
+                        "Movimientos",
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    Text(
+                        "Ver gráfica",
                         color = Color.Gray,
-                        modifier = Modifier.clickable { showAllMovimientos = true })
+                        modifier = Modifier
+                            .clickable { showChart = true }
+                    )
+
+                    Spacer(Modifier.width(16.dp))
+
+                    Text(
+                        "Ver todo",
+                        color = Color.Gray,
+                        modifier = Modifier
+                            .clickable { showAllMovimientos = true }
+                    )
                 }
+
 
                 Spacer(Modifier.height(12.dp))
 
@@ -180,6 +204,33 @@ fun DashboardScreen(
                     Spacer(Modifier.height(10.dp))
                 }
             }
+            // 🔔 BOTÓN DE PRUEBA: NOTIFICACIÓN EN 1 MINUTO
+            Spacer(Modifier.height(16.dp))
+
+            Button(
+                onClick = {
+                    val cal = Calendar.getInstance().apply { add(Calendar.MINUTE, 1) }
+
+                    scheduleDailyNotification(
+                        context = context,
+                        hour = cal.get(Calendar.HOUR_OF_DAY),
+                        minute = cal.get(Calendar.MINUTE),
+                        title = "Test notificación",
+                        message = "Si ves esto, el sistema de notificaciones funciona 😉",
+                        category = "Prueba"
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp)
+            ) {
+                Text("Probar notificación en 1 minuto")
+            }
+
+            Spacer(Modifier.height(16.dp))
+
+
+
         }
 
         if (showProfileMenu) {
@@ -197,8 +248,108 @@ fun DashboardScreen(
                 showAllMovimientos = false
             }
         }
+        if (showChart) {
+            IngresosGastosChartDialog(
+                ingresos = totalIngresos,
+                gastos = totalGastos,
+                onDismiss = { showChart = false }
+            )
+        }
+
+
     }
 }
+
+@Composable
+fun IngresosGastosChartDialog(
+    ingresos: Double,
+    gastos: Double,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Ingresos vs gastos") },
+        text = {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+
+                if (ingresos == 0.0 && gastos == 0.0) {
+                    Text(
+                        "Aún no hay datos para mostrar.",
+                        color = Color.Gray,
+                        fontSize = 13.sp
+                    )
+                } else {
+                    val maxVal = max(ingresos, gastos)
+                    val ingresosRatio = if (maxVal > 0) (ingresos / maxVal).toFloat() else 0f
+                    val gastosRatio = if (maxVal > 0) (gastos / maxVal).toFloat() else 0f
+
+                    BarChartRow(
+                        label = "Ingresos",
+                        amount = ingresos,
+                        ratio = ingresosRatio,
+                        color = Color(0xFF00C853)
+                    )
+
+                    Spacer(Modifier.height(16.dp))
+
+                    BarChartRow(
+                        label = "Gastos",
+                        amount = gastos,
+                        ratio = gastosRatio,
+                        color = Color(0xFFFF5252)
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cerrar")
+            }
+        }
+    )
+}
+
+@Composable
+fun BarChartRow(
+    label: String,
+    amount: Double,
+    ratio: Float,
+    color: Color
+) {
+    Column(Modifier.fillMaxWidth()) {
+
+        Row(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(label, fontWeight = FontWeight.Bold)
+            Text("Q${String.format("%.2f", amount)}", fontWeight = FontWeight.Bold)
+        }
+
+        Spacer(Modifier.height(6.dp))
+
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xFFE0E0E0))
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(ratio.coerceIn(0f, 1f))
+                    .background(color)
+            )
+        }
+    }
+}
+
 @Composable
 fun TopCardsSection(
     ingresos: Double,
@@ -479,48 +630,119 @@ fun GastoRowDashboard(name: String, date: String, amount: Double) {
 // =======================================================================
 
 @Composable
-fun IngresosDashboardContent(total: Double, meta: Double, lista: List<com.example.cashucontrol.models.Ingreso>) {
-
+fun IngresosDashboardContent(
+    total: Double,
+    meta: Double,
+    lista: List<com.example.cashucontrol.models.Ingreso>
+) {
     val progreso = if (meta > 0) (total / meta).coerceIn(0.0, 1.0) else 0.0
+    val porcentaje = (progreso * 100).toInt()
 
-    Text("Ingresos del mes", fontWeight = FontWeight.Bold, color = Color(0xFF1A237E))
-    Spacer(Modifier.height(10.dp))
+    Column {
+        // 1) LISTA DE INGRESOS
+        lista.forEach {
+            IngresoRowDashboard(it.name, it.date, it.amount)
+        }
 
-    ProgressCard(
-        leftText = "Acumulado Q.$total",
-        rightText = "${(progreso * 100).toInt()}%",
-        progress = progreso.toFloat(),
-        color = Color(0xFF00C853)
-    )
+        if (lista.isEmpty()) {
+            Text(
+                "Aún no has registrado ingresos este mes",
+                color = Color.Gray,
+                fontSize = 13.sp
+            )
+        }
 
-    Spacer(Modifier.height(15.dp))
+        Spacer(Modifier.height(16.dp))
 
-    lista.forEach {
-        IngresoRowDashboard(it.name, it.date, it.amount)
+        // 2) TEXTO "LLEVAS X DÍAS REGISTRANDO"
+        Text(
+            "Llevas 17 días registrando",
+            color = Color.Gray,
+            fontSize = 13.sp
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+        // 3) META MENSUAL + TARJETA DE PROGRESO
+        Text(
+            "Meta mensual  Q.$meta",
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            color = Color(0xFF1A237E)
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        ProgressCard(
+            leftText = "Alcanzado un $porcentaje%",
+            rightText = when {
+                progreso >= 1f -> "¡Meta alcanzada!"
+                progreso >= 0.5f -> "¡Vas muy bien, sigue así!"
+                else -> "¡Buen inicio, continúa!"
+            },
+            progress = progreso.toFloat(),
+            color = Color(0xFF00C853)
+        )
     }
 }
 
 @Composable
-fun GastosDashboardContent(total: Double, meta: Double, lista: List<com.example.cashucontrol.models.Gasto>) {
-
+fun GastosDashboardContent(
+    total: Double,
+    meta: Double,
+    lista: List<com.example.cashucontrol.models.Gasto>
+) {
     val progreso = if (meta > 0) (total / meta).coerceIn(0.0, 1.0) else 0.0
+    val porcentaje = (progreso * 100).toInt()
 
-    Text("Gastos del mes", fontWeight = FontWeight.Bold, color = Color(0xFF1A237E))
-    Spacer(Modifier.height(10.dp))
+    Column {
+        // 1) LISTA DE GASTOS
+        lista.forEach {
+            GastoRowDashboard(it.name, it.date, it.amount)
+        }
 
-    ProgressCard(
-        leftText = "Gastado Q.$total",
-        rightText = "${(progreso * 100).toInt()}%",
-        progress = progreso.toFloat(),
-        color = Color(0xFFFF5252)
-    )
+        if (lista.isEmpty()) {
+            Text(
+                "Aún no has registrado gastos este mes",
+                color = Color.Gray,
+                fontSize = 13.sp
+            )
+        }
 
-    Spacer(Modifier.height(15.dp))
+        Spacer(Modifier.height(16.dp))
 
-    lista.forEach {
-        GastoRowDashboard(it.name, it.date, it.amount)
+        // 2) TEXTO "LLEVAS X DÍAS REGISTRANDO"
+        Text(
+            "Llevas 17 días registrando",
+            color = Color.Gray,
+            fontSize = 13.sp
+        )
+
+        Spacer(Modifier.height(10.dp))
+
+        // 3) PRESUPUESTO MENSUAL + TARJETA DE PROGRESO
+        Text(
+            "Presupuesto mensual",
+            fontWeight = FontWeight.Bold,
+            fontSize = 16.sp,
+            color = Color(0xFF1A237E)
+        )
+
+        Spacer(Modifier.height(8.dp))
+
+        ProgressCard(
+            leftText = "Usado $porcentaje%",
+            rightText = when {
+                progreso >= 1f -> "¡Te pasaste del límite!"
+                progreso >= 0.85f -> "¡Ya casi llegas al límite!"
+                else -> "Aún tienes margen."
+            },
+            progress = progreso.toFloat(),
+            color = Color(0xFFFF5252)
+        )
     }
 }
+
 
 @Composable
 fun ProgressCard(
@@ -529,36 +751,47 @@ fun ProgressCard(
     progress: Float,
     color: Color
 ) {
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(Color(0xFFF5F5F5))
-            .padding(16.dp)
+            .clip(RoundedCornerShape(12.dp))          // Igual que GastoRow
+            .background(Color(0xFFF5F5F5))           // Igual que GastoRow
+            .padding(12.dp)                          // Igual que GastoRow
     ) {
-        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
 
-            LinearProgressIndicator(
-                progress = progress,
-                color = color,
-                trackColor = Color(0xFFE0E0E0),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(14.dp)
-                    .clip(RoundedCornerShape(10.dp))
+        // Fila de textos (similar a la info del gasto)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                leftText,
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
             )
-
-            Row(
-                Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(leftText, color = Color.Gray, fontSize = 13.sp)
-                Text(rightText, color = color, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-            }
+            Text(
+                rightText,
+                color = color,
+                fontWeight = FontWeight.Bold,
+                fontSize = 13.sp
+            )
         }
+
+        Spacer(Modifier.height(8.dp))
+
+        // Barra de progreso dentro de la misma “tarjeta”
+        LinearProgressIndicator(
+            progress = progress,
+            color = color,
+            trackColor = Color(0xFFE0E0E0),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+                .clip(RoundedCornerShape(6.dp))
+        )
     }
 }
-
 
 @Composable
 fun AhorroDashboardContent(lista: List<com.example.cashucontrol.models.Ahorro>) {
