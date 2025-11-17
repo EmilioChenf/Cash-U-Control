@@ -78,6 +78,7 @@ dependencies {
 
     // --- Kotlin Serialization (NECESARIO para navigation type-safe)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+    implementation(libs.androidx.compose.foundation.layout)
 
     // --- Testing ---
     testImplementation(libs.junit)

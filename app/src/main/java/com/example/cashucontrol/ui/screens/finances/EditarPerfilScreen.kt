@@ -17,17 +17,35 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.cashucontrol.viewmodel.EditarPerfilViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditarPerfilScreen(onBackClick: () -> Unit) {
+
+    val vm = remember { EditarPerfilViewModel() }
+
+    val nombre by vm.nombre.collectAsState()
+    val correo by vm.correo.collectAsState()
+    val mensaje by vm.mensaje.collectAsState()
+
+    var nombreEdit by remember { mutableStateOf("") }
+    var correoEdit by remember { mutableStateOf("") }
+    var contrasenaEdit by remember { mutableStateOf("") }
+
+    // Sincronizar datos iniciales
+    LaunchedEffect(nombre, correo) {
+        if (nombreEdit.isEmpty()) nombreEdit = nombre
+        if (correoEdit.isEmpty()) correoEdit = correo
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        // 🔵 Encabezado azul con ícono
+        // 🔵 Encabezado azul
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -53,23 +71,18 @@ fun EditarPerfilScreen(onBackClick: () -> Unit) {
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        // Campos del formulario
-        var nombre by remember { mutableStateOf("Ana Sofía Lopez") }
-        var correo by remember { mutableStateOf("anasofia02@gmail.com") }
-        var contrasena by remember { mutableStateOf("123456") }
-
+        // Formularios
         Column(modifier = Modifier.padding(horizontal = 35.dp)) {
 
             // Nombre
             Text("Nombre", fontWeight = FontWeight.Bold, color = Color.Gray, fontSize = 14.sp)
             TextField(
-                value = nombre,
-                onValueChange = { nombre = it },
+                value = nombreEdit,
+                onValueChange = { nombreEdit = it },
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFFF2F2F2),
                     unfocusedContainerColor = Color(0xFFF2F2F2),
-                    disabledContainerColor = Color(0xFFF2F2F2),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 )
@@ -80,13 +93,12 @@ fun EditarPerfilScreen(onBackClick: () -> Unit) {
             // Correo
             Text("Correo electrónico", fontWeight = FontWeight.Bold, color = Color.Gray, fontSize = 14.sp)
             TextField(
-                value = correo,
-                onValueChange = { correo = it },
+                value = correoEdit,
+                onValueChange = { correoEdit = it },
                 modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFFF2F2F2),
                     unfocusedContainerColor = Color(0xFFF2F2F2),
-                    disabledContainerColor = Color(0xFFF2F2F2),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 )
@@ -97,14 +109,13 @@ fun EditarPerfilScreen(onBackClick: () -> Unit) {
             // Contraseña
             Text("Contraseña", fontWeight = FontWeight.Bold, color = Color.Gray, fontSize = 14.sp)
             TextField(
-                value = contrasena,
-                onValueChange = { contrasena = it },
-                modifier = Modifier.fillMaxWidth(),
+                value = contrasenaEdit,
+                onValueChange = { contrasenaEdit = it },
                 visualTransformation = PasswordVisualTransformation(),
+                modifier = Modifier.fillMaxWidth(),
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color(0xFFF2F2F2),
                     unfocusedContainerColor = Color(0xFFF2F2F2),
-                    disabledContainerColor = Color(0xFFF2F2F2),
                     focusedIndicatorColor = Color.Transparent,
                     unfocusedIndicatorColor = Color.Transparent
                 )
@@ -114,7 +125,9 @@ fun EditarPerfilScreen(onBackClick: () -> Unit) {
 
             // Botón guardar
             Button(
-                onClick = { /* Acción de guardar */ },
+                onClick = {
+                    vm.actualizarPerfil(nombreEdit, correoEdit, contrasenaEdit.ifEmpty { null })
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp)
@@ -123,9 +136,15 @@ fun EditarPerfilScreen(onBackClick: () -> Unit) {
             ) {
                 Text("Guardar", color = Color.White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
             }
+
+            if (mensaje.isNotEmpty()) {
+                Spacer(Modifier.height(10.dp))
+                Text(mensaje, color = Color(0xFF00C853), fontWeight = FontWeight.Bold)
+            }
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun PreviewEditarPerfilScreen() {
